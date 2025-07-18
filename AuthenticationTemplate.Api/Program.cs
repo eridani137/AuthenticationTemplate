@@ -1,11 +1,10 @@
 using AuthenticationTemplate.Shared.Configuration;
 using Carter;
-
 var builder = WebApplication.CreateBuilder(args);
 
 ConfigureLogging.Configure(builder);
 
-builder.Services.AddOpenApi();
+builder.Services.AddSwaggerGen();
 builder.Services.AddCarter();
 builder.Services.AddEndpointsApiExplorer();
 
@@ -15,7 +14,8 @@ var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
+    app.UseSwagger();
+    app.UseSwaggerUI();
 }
 
 app.UseCors("AllowAll");
