@@ -11,12 +11,12 @@ namespace AuthenticationTemplate.Application.Services;
 
 public class JwtService(IOptions<JwtConfig>  jwtConfig)
 {
-    public KeyPair GenerateKeyPair(ApplicationUser user)
+    public TokenPair GenerateKeyPair(ApplicationUser user)
     {
         var accessToken = GenerateToken(user);
         var refreshToken = GenerateRefreshToken(user);
         
-        return new KeyPair(accessToken, refreshToken);
+        return new TokenPair(accessToken, refreshToken);
     }
     
     public string GenerateToken(ApplicationUser user)
@@ -59,4 +59,4 @@ public class JwtService(IOptions<JwtConfig>  jwtConfig)
     }
 }
 
-public record KeyPair(string AccessToken, string RefreshToken);
+public record TokenPair(string AccessToken, string RefreshToken);

@@ -9,7 +9,7 @@ public static class ServiceExtensions
 {
     public static IServiceCollection AddApplication(this IServiceCollection services)
     {
-        services.AddValidatorsFromAssemblyContaining<RegisterValidator>();
+        services.AddValidatorsFromAssemblyContaining<LoginValidator>();
 
         services.AddScoped<JwtService>();
 

@@ -1,6 +1,5 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using AuthenticationTemplate.Application;
 using AuthenticationTemplate.Application.Filters;
 using AuthenticationTemplate.Application.Services;
 using AuthenticationTemplate.Core.Entities;
@@ -9,6 +8,7 @@ using AuthenticationTemplate.Shared.Extensions;
 using AuthenticationTemplate.Shared.Mappings;
 using Carter;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using MongoDB.Driver.Linq;
 
 namespace AuthenticationTemplate.Auth.Api.Endpoints;
@@ -37,7 +37,10 @@ public class Authentification : ICarterModule
                         Id = user.Id.ToString()
                     });
                 })
-            .AddEndpointFilter<ValidationFilter<RegistrationDto>>();
+            .AddEndpointFilter<ValidationFilter<RegistrationDto>>()
+            .Produces(StatusCodes.Status200OK)
+            .Produces(StatusCodes.Status400BadRequest)
+            .WithName("Регистрация");
 
         group.MapPost("/login",
                 async (LoginDto dto, UserManager<ApplicationUser> userManager,
@@ -69,7 +72,11 @@ public class Authentification : ICarterModule
                         Message = $"Повторите через {minutesLeft} мин.",
                     }, statusCode: StatusCodes.Status429TooManyRequests);
                 })
-            .AddEndpointFilter<ValidationFilter<LoginDto>>();
+            .AddEndpointFilter<ValidationFilter<LoginDto>>()
+            .Produces<TokenPair>()
+            .Produces(StatusCodes.Status401Unauthorized)
+            .Produces(StatusCodes.Status429TooManyRequests)
+            .WithName("Авторизация");
 
         group.MapPost("/refresh",
                 async (RefreshTokenDto dto, UserManager<ApplicationUser> userManager, JwtService jwtService) =>
@@ -87,7 +94,10 @@ public class Authentification : ICarterModule
 
                     return Results.Ok(keyPair);
                 })
-            .AddEndpointFilter<ValidationFilter<RefreshTokenDto>>();
+            .AddEndpointFilter<ValidationFilter<RefreshTokenDto>>()
+            .Produces<TokenPair>()
+            .Produces(StatusCodes.Status401Unauthorized)
+            .WithName("Обновление токена доступа");
 
         group.MapPost("/logout",
                 async (UserManager<ApplicationUser> userManager, ClaimsPrincipal claimsPrincipal) =>
@@ -104,6 +114,9 @@ public class Authentification : ICarterModule
 
                     return Results.Ok();
                 })
-            .RequireAuthorization();
+            .RequireAuthorization()
+            .Produces(StatusCodes.Status200OK)
+            .Produces(StatusCodes.Status401Unauthorized)
+            .WithName("Выход");
     }
 }
