@@ -7,6 +7,7 @@ using AuthenticationTemplate.Shared.Extensions;
 using AuthenticationTemplate.Shared.Mappings;
 using Carter;
 using Microsoft.AspNetCore.Identity;
+using MongoDB.Driver.Linq;
 
 namespace AuthenticationTemplate.Auth.Api.Endpoints;
 
@@ -27,49 +28,69 @@ public class Authentification : ICarterModule
                     if (!result.Succeeded)
                     {
                         return Results.ValidationProblem(result.Errors.GetIdentityErrors());
-                        
                     }
 
-                    return Results.Created($"/users/{user.Id}", user.Id);
+                    return Results.Ok(new
+                    {
+                        Id = user.Id.ToString()
+                    });
                 })
             .AddEndpointFilter<ValidationFilter<RegistrationDto>>();
 
         group.MapPost("/login",
-            async (LoginDto dto, UserManager<ApplicationUser> userManager, JwtService jwtService) =>
-            {
-                var user = await userManager.FindByNameAsync(dto.Username);
-                if (user is null)
+                async (LoginDto dto, UserManager<ApplicationUser> userManager, JwtService jwtService) =>
                 {
-                    return Results.Unauthorized();
-                }
-
-                var now = DateTime.UtcNow;
-                if (user.LockoutEnd is not null)
-                {
-                    if (user.LockoutEnd > now)
+                    var user = await userManager.FindByNameAsync(dto.Username);
+                    if (user is null)
                     {
-                        var minutesLeft = (int)Math.Ceiling((user.LockoutEnd.Value.UtcDateTime - now).TotalMinutes);
-                        return Results.Json(new
-                        {
-                            Error = $"Повторите через {minutesLeft} мин.",
-                        }, statusCode: StatusCodes.Status429TooManyRequests);
+                        return Results.Unauthorized();
                     }
-                }
 
-                var result = await userManager.CheckPasswordAsync(user, dto.Password);
-                if (!result)
-                {
-                    await userManager.AccessFailedAsync(user);
-                    return Results.Unauthorized();
-                }
+                    var now = DateTime.UtcNow;
+                    if (user.LockoutEnd is not null)
+                    {
+                        if (user.LockoutEnd > now)
+                        {
+                            var minutesLeft = (int)Math.Ceiling((user.LockoutEnd.Value.UtcDateTime - now).TotalMinutes);
+                            return Results.Json(new
+                            {
+                                Error = $"Повторите через {minutesLeft} мин.",
+                            }, statusCode: StatusCodes.Status429TooManyRequests);
+                        }
+                    }
 
-                await userManager.ResetAccessFailedCountAsync(user);
+                    var result = await userManager.CheckPasswordAsync(user, dto.Password);
+                    if (!result)
+                    {
+                        await userManager.AccessFailedAsync(user);
+                        return Results.Unauthorized();
+                    }
 
-                return Results.Ok(new
-                {
-                    AccessToken = jwtService.GenerateToken(user)
-                });
-            })
+                    var keyPair = jwtService.GenerateKeyPair(user);
+                    user.AccessFailedCount = 0;
+                    await userManager.UpdateAsync(user);
+
+                    return Results.Ok(keyPair);
+                })
             .AddEndpointFilter<ValidationFilter<LoginDto>>();
+
+        group.MapPost("/refresh",
+                async (RefreshTokenDto dto, UserManager<ApplicationUser> userManager, JwtService jwtService) =>
+                {
+                    var user = await userManager.Users.SingleOrDefaultAsync(u => u.RefreshToken == dto.RefreshToken);
+
+                    if (user is null || user.RefreshTokenExpiryTime <= DateTime.UtcNow)
+                    {
+                        return Results.Unauthorized();
+                    }
+
+                    var keyPair = jwtService.GenerateKeyPair(user);
+                    user.AccessFailedCount = 0;
+                    await userManager.UpdateAsync(user);
+
+                    return Results.Ok(keyPair);
+                })
+            .AddEndpointFilter<ValidationFilter<RefreshTokenDto>>();
+        ;
     }
 }
