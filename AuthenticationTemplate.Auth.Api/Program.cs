@@ -1,4 +1,5 @@
 using AuthenticationTemplate.Application;
+using AuthenticationTemplate.Application.Configuration;
 using AuthenticationTemplate.Core.Configuration;
 using AuthenticationTemplate.Infrastructure;
 using Carter;
@@ -16,17 +17,17 @@ builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
 
 ConfigureCors.Configure(builder);
+ConfigureJwt.Configure(builder);
 
 var app = builder.Build();
 
-// if (app.Environment.IsDevelopment())
-{
-    app.MapOpenApi();
-    app.MapScalarApiReference();
-}
+app.MapOpenApi();
+app.MapScalarApiReference();
 
 app.UseCors("AllowAll");
 app.MapCarter();
-// app.UseHttpsRedirection();
+
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.Run();

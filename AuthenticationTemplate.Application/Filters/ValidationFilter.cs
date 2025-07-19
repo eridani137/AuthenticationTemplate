@@ -1,7 +1,7 @@
 using FluentValidation;
 using Microsoft.AspNetCore.Http;
 
-namespace AuthenticationTemplate.Application;
+namespace AuthenticationTemplate.Application.Filters;
 
 public class ValidationFilter<T>(IValidator<T> validator) : IEndpointFilter
     where T : class

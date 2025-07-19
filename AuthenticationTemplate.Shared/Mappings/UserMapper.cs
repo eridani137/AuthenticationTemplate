@@ -1,5 +1,5 @@
 using AuthenticationTemplate.Core.Entities;
-using AuthenticationTemplate.Shared.DTOs.User;
+using AuthenticationTemplate.Shared.DTOs;
 
 namespace AuthenticationTemplate.Shared.Mappings;
 

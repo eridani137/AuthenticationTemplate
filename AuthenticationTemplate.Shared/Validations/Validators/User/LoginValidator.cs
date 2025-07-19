@@ -3,9 +3,9 @@ using AuthenticationTemplate.Shared.Validations.Abstractions;
 
 namespace AuthenticationTemplate.Shared.Validations.Validators.User;
 
-public class RegisterValidator : BaseValidator<RegistrationDto>
+public class LoginValidator : BaseValidator<LoginDto>
 {
-    public RegisterValidator()
+    public LoginValidator()
     {
         RuleFor(x => x.Username).ValidUsername();
         RuleFor(x => x.Password).ValidPassword();

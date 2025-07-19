@@ -14,14 +14,11 @@ ConfigureCors.Configure(builder);
 
 var app = builder.Build();
 
-// if (app.Environment.IsDevelopment())
-{
-    app.MapOpenApi();
-    app.MapScalarApiReference();
-}
+app.MapOpenApi();
+app.MapScalarApiReference();
 
 app.UseCors("AllowAll");
 app.MapCarter();
-// app.UseHttpsRedirection();
+
 
 app.Run();
