@@ -1,3 +1,5 @@
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 using AuthenticationTemplate.Application;
 using AuthenticationTemplate.Application.Filters;
 using AuthenticationTemplate.Application.Services;
@@ -38,15 +40,17 @@ public class Authentification : ICarterModule
             .AddEndpointFilter<ValidationFilter<RegistrationDto>>();
 
         group.MapPost("/login",
-                async (LoginDto dto, UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, JwtService jwtService) =>
+                async (LoginDto dto, UserManager<ApplicationUser> userManager,
+                    SignInManager<ApplicationUser> signInManager, JwtService jwtService) =>
                 {
                     var user = await userManager.FindByNameAsync(dto.Username);
                     if (user is null)
                     {
                         return Results.Unauthorized();
                     }
-                    
-                    var result = await signInManager.PasswordSignInAsync(user, dto.Password, isPersistent: false, lockoutOnFailure: true);
+
+                    var result = await signInManager.PasswordSignInAsync(user, dto.Password, isPersistent: false,
+                        lockoutOnFailure: true);
                     if (result.Succeeded)
                     {
                         var keyPair = jwtService.GenerateKeyPair(user);
@@ -55,11 +59,11 @@ public class Authentification : ICarterModule
                     }
 
                     if (!result.IsLockedOut) return Results.Unauthorized();
-                    
+
                     var now = DateTime.UtcNow;
                     if (user.LockoutEnd is null || !(user.LockoutEnd > now)) return Results.Unauthorized();
                     var minutesLeft = (int)Math.Ceiling((user.LockoutEnd.Value.UtcDateTime - now).TotalMinutes);
-                    
+
                     return Results.Json(new
                     {
                         Message = $"Повторите через {minutesLeft} мин.",
@@ -84,6 +88,22 @@ public class Authentification : ICarterModule
                     return Results.Ok(keyPair);
                 })
             .AddEndpointFilter<ValidationFilter<RefreshTokenDto>>();
-        ;
+
+        group.MapPost("/logout",
+                async (UserManager<ApplicationUser> userManager, ClaimsPrincipal claimsPrincipal) =>
+                {
+                    var userId = claimsPrincipal.FindFirstValue(JwtRegisteredClaimNames.Sub);
+                    if (userId is null) return Results.Unauthorized();
+
+                    var user = await userManager.FindByIdAsync(userId);
+                    if (user is null) return Results.Unauthorized();
+
+                    user.RefreshToken = null;
+                    user.RefreshTokenExpiryTime = null;
+                    await userManager.UpdateAsync(user);
+
+                    return Results.Ok();
+                })
+            .RequireAuthorization();
     }
 }
