@@ -4,17 +4,22 @@
         <TargetFramework>net9.0</TargetFramework>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
+        <RootNamespace>AuthenticationTemplate.Api</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>
         <PackageReference Include="Carter" Version="9.0.0" />
-        <PackageReference Include="Swashbuckle.AspNetCore.Swagger" Version="9.0.3" />
-        <PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" Version="9.0.3" />
-        <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="9.0.3" />
+        <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.7"/>
+        <PackageReference Include="Scalar.AspNetCore" Version="2.6.3" />
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\AuthenticationTemplate.Core\AuthenticationTemplate.Core.csproj" />
       <ProjectReference Include="..\AuthenticationTemplate.Shared\AuthenticationTemplate.Shared.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Endpoints\" />
     </ItemGroup>
 
 </Project>

@@ -1,10 +1,12 @@
-using AuthenticationTemplate.Shared.Configuration;
+using AuthenticationTemplate.Core.Configuration;
 using Carter;
+using Scalar.AspNetCore;
+
 var builder = WebApplication.CreateBuilder(args);
 
 ConfigureLogging.Configure(builder);
 
-builder.Services.AddSwaggerGen();
+builder.Services.AddOpenApi();
 builder.Services.AddCarter();
 builder.Services.AddEndpointsApiExplorer();
 
@@ -12,10 +14,10 @@ ConfigureCors.Configure(builder);
 
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
+// if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    app.MapOpenApi();
+    app.MapScalarApiReference();
 }
 
 app.UseCors("AllowAll");

@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace AuthenticationTemplate.Shared.Configuration;
+namespace AuthenticationTemplate.Core.Configuration;
 
 public static class ConfigureCors
 {

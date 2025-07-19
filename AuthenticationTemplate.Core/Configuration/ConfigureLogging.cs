@@ -4,7 +4,7 @@ using Serilog.Core;
 using Serilog.Events;
 using Serilog.Exceptions;
 
-namespace AuthenticationTemplate.Shared.Configuration;
+namespace AuthenticationTemplate.Core.Configuration;
 
 public static class ConfigureLogging
 {

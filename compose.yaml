@@ -1,0 +1,27 @@
+﻿services:
+  auth.api:
+    image: auth.api
+    build:
+      context: .
+      dockerfile: AuthenticationTemplate.Auth.Api/Dockerfile
+    restart: unless-stopped
+    environment:
+      - ASPNETCORE_URLS=http://+:5544
+    ports:
+      - "5544:5544"
+    networks:
+      - internal
+  
+  mongo:
+    image: mongodb/mongodb-community-server:latest
+    restart: unless-stopped
+    volumes:
+      - ./mongo_data:/data/db
+    ports:
+      - '27017:27017'
+    networks:
+      - internal
+
+networks:
+  internal:
+    driver: bridge

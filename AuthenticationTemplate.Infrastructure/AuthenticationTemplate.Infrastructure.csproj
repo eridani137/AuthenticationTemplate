@@ -7,12 +7,10 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="FluentValidation" Version="12.0.0" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <Folder Include="Extensions\" />
-      <Folder Include="Validations\Validators\" />
+      <PackageReference Include="AspNetCore.Identity.Mongo" Version="10.1.0" />
+      <PackageReference Include="Microsoft.Extensions.Configuration" Version="9.0.7" />
+      <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.7" />
+      <PackageReference Include="MongoDB.Driver" Version="3.4.1" />
     </ItemGroup>
 
     <ItemGroup>
