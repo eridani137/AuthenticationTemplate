@@ -38,39 +38,32 @@ public class Authentification : ICarterModule
             .AddEndpointFilter<ValidationFilter<RegistrationDto>>();
 
         group.MapPost("/login",
-                async (LoginDto dto, UserManager<ApplicationUser> userManager, JwtService jwtService) =>
+                async (LoginDto dto, UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, JwtService jwtService) =>
                 {
                     var user = await userManager.FindByNameAsync(dto.Username);
                     if (user is null)
                     {
                         return Results.Unauthorized();
                     }
+                    
+                    var result = await signInManager.PasswordSignInAsync(user, dto.Password, isPersistent: false, lockoutOnFailure: true);
+                    if (result.Succeeded)
+                    {
+                        var keyPair = jwtService.GenerateKeyPair(user);
+                        await userManager.UpdateAsync(user);
+                        return Results.Ok(keyPair);
+                    }
 
+                    if (!result.IsLockedOut) return Results.Unauthorized();
+                    
                     var now = DateTime.UtcNow;
-                    if (user.LockoutEnd is not null)
+                    if (user.LockoutEnd is null || !(user.LockoutEnd > now)) return Results.Unauthorized();
+                    var minutesLeft = (int)Math.Ceiling((user.LockoutEnd.Value.UtcDateTime - now).TotalMinutes);
+                    
+                    return Results.Json(new
                     {
-                        if (user.LockoutEnd > now)
-                        {
-                            var minutesLeft = (int)Math.Ceiling((user.LockoutEnd.Value.UtcDateTime - now).TotalMinutes);
-                            return Results.Json(new
-                            {
-                                Error = $"Повторите через {minutesLeft} мин.",
-                            }, statusCode: StatusCodes.Status429TooManyRequests);
-                        }
-                    }
-
-                    var result = await userManager.CheckPasswordAsync(user, dto.Password);
-                    if (!result)
-                    {
-                        await userManager.AccessFailedAsync(user);
-                        return Results.Unauthorized();
-                    }
-
-                    var keyPair = jwtService.GenerateKeyPair(user);
-                    user.AccessFailedCount = 0;
-                    await userManager.UpdateAsync(user);
-
-                    return Results.Ok(keyPair);
+                        Message = $"Повторите через {minutesLeft} мин.",
+                    }, statusCode: StatusCodes.Status429TooManyRequests);
                 })
             .AddEndpointFilter<ValidationFilter<LoginDto>>();
 

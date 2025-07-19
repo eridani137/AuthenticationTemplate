@@ -30,4 +30,6 @@ app.MapCarter();
 app.UseAuthentication();
 app.UseAuthorization();
 
+await InitApp.Init(app);
+
 app.Run();
