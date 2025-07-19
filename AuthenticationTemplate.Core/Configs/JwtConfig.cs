@@ -7,4 +7,5 @@ public record JwtConfig
     public required string Audience { get; init; }
     public required TimeSpan AccessTokenDuration { get; init; }
     public required TimeSpan RefreshTokenDuration { get; init; }
+    public required int RefreshTokenLength { get; init; }
 }

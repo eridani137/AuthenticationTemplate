@@ -52,8 +52,7 @@ public class Authentification : ICarterModule
                         return Results.Unauthorized();
                     }
 
-                    var result = await signInManager.PasswordSignInAsync(user, dto.Password, isPersistent: false,
-                        lockoutOnFailure: true);
+                    var result = await signInManager.PasswordSignInAsync(user, dto.Password, false, true);
                     if (result.Succeeded)
                     {
                         var keyPair = jwtService.GenerateKeyPair(user);
@@ -83,16 +82,22 @@ public class Authentification : ICarterModule
                 {
                     var user = await userManager.Users.SingleOrDefaultAsync(u => u.RefreshToken == dto.RefreshToken);
 
-                    if (user is null || user.RefreshTokenExpiryTime <= DateTime.UtcNow)
+                    if (user is null)
                     {
                         return Results.Unauthorized();
                     }
 
-                    var keyPair = jwtService.GenerateKeyPair(user);
-                    user.AccessFailedCount = 0;
-                    await userManager.UpdateAsync(user);
+                    if (user.RefreshTokenExpiryTime <= DateTime.UtcNow)
+                    {
+                        user.ClearRefreshToken();
+                        await userManager.UpdateAsync(user);
+                        
+                        return Results.Unauthorized();
+                    }
 
-                    return Results.Ok(keyPair);
+                    var accessToken = jwtService.GenerateToken(user);
+
+                    return Results.Ok(new TokenPair(accessToken, user.RefreshToken!));
                 })
             .AddEndpointFilter<ValidationFilter<RefreshTokenDto>>()
             .Produces<TokenPair>()
@@ -108,8 +113,7 @@ public class Authentification : ICarterModule
                     var user = await userManager.FindByIdAsync(userId);
                     if (user is null) return Results.Unauthorized();
 
-                    user.RefreshToken = null;
-                    user.RefreshTokenExpiryTime = null;
+                    user.ClearRefreshToken();
                     await userManager.UpdateAsync(user);
 
                     return Results.Ok();
