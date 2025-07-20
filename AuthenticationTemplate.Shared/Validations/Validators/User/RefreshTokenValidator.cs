@@ -1,4 +1,4 @@
-using AuthenticationTemplate.Core.Configs;
+using AuthenticationTemplate.Shared.Configs;
 using AuthenticationTemplate.Shared.DTOs;
 using AuthenticationTemplate.Shared.Validations.Abstractions;
 using FluentValidation;

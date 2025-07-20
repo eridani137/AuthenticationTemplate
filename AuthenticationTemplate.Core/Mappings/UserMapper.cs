@@ -1,7 +1,7 @@
 using AuthenticationTemplate.Core.Entities;
 using AuthenticationTemplate.Shared.DTOs;
 
-namespace AuthenticationTemplate.Shared.Mappings;
+namespace AuthenticationTemplate.Core.Mappings;
 
 public static class UserMapper
 {

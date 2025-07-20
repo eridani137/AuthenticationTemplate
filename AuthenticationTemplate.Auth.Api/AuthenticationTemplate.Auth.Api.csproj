@@ -14,16 +14,15 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\AuthenticationTemplate.Application\AuthenticationTemplate.Application.csproj" />
-      <ProjectReference Include="..\AuthenticationTemplate.Core\AuthenticationTemplate.Core.csproj" />
-      <ProjectReference Include="..\AuthenticationTemplate.Infrastructure\AuthenticationTemplate.Infrastructure.csproj" />
-      <ProjectReference Include="..\AuthenticationTemplate.Shared\AuthenticationTemplate.Shared.csproj" />
-    </ItemGroup>
-
-    <ItemGroup>
       <Content Include="..\.dockerignore">
         <Link>.dockerignore</Link>
       </Content>
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\AuthenticationTemplate.Core\AuthenticationTemplate.Core.csproj" />
+      <ProjectReference Include="..\AuthenticationTemplate.Infrastructure\AuthenticationTemplate.Infrastructure.csproj" />
+      <ProjectReference Include="..\AuthenticationTemplate.Shared\AuthenticationTemplate.Shared.csproj" />
     </ItemGroup>
 
 </Project>

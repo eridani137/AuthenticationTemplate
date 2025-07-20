@@ -1,12 +1,11 @@
 using System.Text;
-using AuthenticationTemplate.Core.Configs;
+using AuthenticationTemplate.Shared.Configs;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 
-namespace AuthenticationTemplate.Application.Configuration;
+namespace AuthenticationTemplate.Core.Configuration;
 
 public static class ConfigureJwt
 {

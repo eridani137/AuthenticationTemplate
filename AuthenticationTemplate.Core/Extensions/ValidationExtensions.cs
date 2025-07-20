@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Identity;
 
-namespace AuthenticationTemplate.Shared.Extensions;
+namespace AuthenticationTemplate.Core.Extensions;
 
 public static class ValidationExtensions
 {

@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-namespace AuthenticationTemplate.Application.Configuration;
+namespace AuthenticationTemplate.Core.Configuration;
 
 public class InitApp
 {

@@ -10,8 +10,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AuthenticationTemplate.Core
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AuthenticationTemplate.Auth.Api", "AuthenticationTemplate.Auth.Api\AuthenticationTemplate.Auth.Api.csproj", "{C949AEF2-D7D6-4BB1-BEF6-44A29017CEF4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AuthenticationTemplate.Application", "AuthenticationTemplate.Application\AuthenticationTemplate.Application.csproj", "{1EF1BC3C-E51C-4B41-A4A8-7CBDA9553B12}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{65B43370-3056-463A-9AD1-324E8B62F9B6}"
 	ProjectSection(SolutionItems) = preProject
 		compose.yaml = compose.yaml
@@ -43,9 +41,5 @@ Global
 		{C949AEF2-D7D6-4BB1-BEF6-44A29017CEF4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C949AEF2-D7D6-4BB1-BEF6-44A29017CEF4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C949AEF2-D7D6-4BB1-BEF6-44A29017CEF4}.Release|Any CPU.Build.0 = Release|Any CPU
-		{1EF1BC3C-E51C-4B41-A4A8-7CBDA9553B12}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{1EF1BC3C-E51C-4B41-A4A8-7CBDA9553B12}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{1EF1BC3C-E51C-4B41-A4A8-7CBDA9553B12}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{1EF1BC3C-E51C-4B41-A4A8-7CBDA9553B12}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

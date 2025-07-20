@@ -1,4 +1,4 @@
-namespace AuthenticationTemplate.Core.Configs;
+namespace AuthenticationTemplate.Shared.Configs;
 
 public record JwtConfig
 {

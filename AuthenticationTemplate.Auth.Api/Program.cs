@@ -1,6 +1,5 @@
-using AuthenticationTemplate.Application;
-using AuthenticationTemplate.Application.Configuration;
 using AuthenticationTemplate.Core.Configuration;
+using AuthenticationTemplate.Core.Extensions;
 using AuthenticationTemplate.Infrastructure;
 using Carter;
 using Scalar.AspNetCore;

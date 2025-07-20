@@ -8,14 +8,8 @@
 
     <ItemGroup>
       <PackageReference Include="FluentValidation" Version="12.0.0" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <Folder Include="Validations\Validators\" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <ProjectReference Include="..\AuthenticationTemplate.Core\AuthenticationTemplate.Core.csproj" />
+      <PackageReference Include="Microsoft.Extensions.Options" Version="9.0.7" />
+      <PackageReference Include="MongoDB.Bson" Version="3.4.1" />
     </ItemGroup>
 
 </Project>

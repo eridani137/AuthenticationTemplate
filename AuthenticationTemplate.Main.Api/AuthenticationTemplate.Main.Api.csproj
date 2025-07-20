@@ -15,11 +15,6 @@
 
     <ItemGroup>
       <ProjectReference Include="..\AuthenticationTemplate.Core\AuthenticationTemplate.Core.csproj" />
-      <ProjectReference Include="..\AuthenticationTemplate.Shared\AuthenticationTemplate.Shared.csproj" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <Folder Include="Endpoints\" />
     </ItemGroup>
 
 </Project>

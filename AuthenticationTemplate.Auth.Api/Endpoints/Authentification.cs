@@ -1,14 +1,13 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using AuthenticationTemplate.Application.Filters;
-using AuthenticationTemplate.Application.Services;
 using AuthenticationTemplate.Core.Entities;
+using AuthenticationTemplate.Core.Extensions;
+using AuthenticationTemplate.Core.Filters;
+using AuthenticationTemplate.Core.Mappings;
+using AuthenticationTemplate.Core.Services;
 using AuthenticationTemplate.Shared.DTOs;
-using AuthenticationTemplate.Shared.Extensions;
-using AuthenticationTemplate.Shared.Mappings;
 using Carter;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
 using MongoDB.Driver.Linq;
 
 namespace AuthenticationTemplate.Auth.Api.Endpoints;

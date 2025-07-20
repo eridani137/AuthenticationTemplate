@@ -1,9 +1,9 @@
-using AuthenticationTemplate.Application.Services;
+using AuthenticationTemplate.Core.Services;
 using AuthenticationTemplate.Shared.Validations.Validators.User;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace AuthenticationTemplate.Application;
+namespace AuthenticationTemplate.Core.Extensions;
 
 public static class ServiceExtensions
 {
