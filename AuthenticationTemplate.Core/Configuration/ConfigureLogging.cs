@@ -21,19 +21,23 @@ public static class ConfigureLogging
         const string outputTemplate =
             "[{Timestamp:HH:mm:ss} {Level:u3}] [{SourceContext}] {Message:lj}{NewLine}{Exception}";
 
+        var endpoint = Environment.GetEnvironmentVariable("OTEL_EXPORTER_OTLP_ENDPOINT")!;
+        var serviceName = Environment.GetEnvironmentVariable("OTEL_SERVICE_NAME")!;
         var levelSwitch = new LoggingLevelSwitch();
 
         Log.Logger = new LoggerConfiguration()
             .MinimumLevel.ControlledBy(levelSwitch)
             .MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Warning)
             .MinimumLevel.Override("System.Net.Http.HttpClient", LogEventLevel.Warning)
-            .MinimumLevel.Override("LuckyPennySoftware.AutoMapper.License", LogEventLevel.Error)
+            .MinimumLevel.Override("Polly", LogEventLevel.Warning)
             .Enrich.FromLogContext()
             .Enrich.WithMachineName()
             .Enrich.WithEnvironmentName()
             .Enrich.WithExceptionDetails()
+            .Enrich.WithProperty("ServiceName", serviceName)
             .WriteTo.Console(outputTemplate: outputTemplate, levelSwitch: levelSwitch)
             .WriteTo.File($"{logsPath}/.log", rollingInterval: RollingInterval.Day, outputTemplate: outputTemplate, levelSwitch: levelSwitch)
+            .WriteTo.Seq(endpoint, controlLevelSwitch: levelSwitch)
             .CreateLogger();
         
         builder.Host.UseSerilog(Log.Logger);

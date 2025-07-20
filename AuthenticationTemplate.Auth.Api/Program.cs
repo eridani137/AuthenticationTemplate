@@ -3,10 +3,12 @@ using AuthenticationTemplate.Core.Extensions;
 using AuthenticationTemplate.Infrastructure;
 using Carter;
 using Scalar.AspNetCore;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
 ConfigureLogging.Configure(builder);
+ConfigureOpenTelemetry.Configure(builder);
 
 builder.Services.AddOpenApi();
 builder.Services.AddCarter();
@@ -20,14 +22,17 @@ ConfigureJwt.Configure(builder);
 
 var app = builder.Build();
 
+app.UseSerilogRequestLogging();
+
 app.MapOpenApi();
 app.MapScalarApiReference();
 
 app.UseCors("AllowAll");
-app.MapCarter();
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.MapCarter();
 
 await InitApp.Init(app);
 

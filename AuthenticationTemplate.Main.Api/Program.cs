@@ -1,6 +1,7 @@
 using AuthenticationTemplate.Core.Configuration;
 using Carter;
 using Scalar.AspNetCore;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,11 +15,16 @@ ConfigureCors.Configure(builder);
 
 var app = builder.Build();
 
+app.UseSerilogRequestLogging();
+
 app.MapOpenApi();
 app.MapScalarApiReference();
 
 app.UseCors("AllowAll");
-app.MapCarter();
 
+app.UseAuthentication();
+app.UseAuthorization();
+
+app.MapCarter();
 
 app.Run();

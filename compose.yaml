@@ -7,8 +7,13 @@
     restart: unless-stopped
     environment:
       - ASPNETCORE_URLS=http://+:5544
+      - OTEL_SERVICE_NAME=Auth.Api
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://seq:5341
     ports:
-      - "5544:5544"
+      - "5544:5544" # TODO
+    depends_on:
+      - mongo
+      - seq
     networks:
       - internal
   
@@ -18,7 +23,22 @@
     volumes:
       - ./mongo_data:/data/db
     ports:
-      - '27017:27017'
+      - "27017:27017" # TODO
+    networks:
+      - internal
+  
+  seq:
+    image: datalust/seq:latest
+    restart: unless-stopped
+    volumes:
+      - ./seq_data:/data
+    environment:
+      - ACCEPT_EULA=Y
+      - SEQ_FIRSTRUN_ADMINPASSWORD=Qwerty123_
+      - SEQ_OPENTELEMETRY_ENABLED=True
+    ports:
+      - "8081:80" # TODO
+      - "5341:5341" # TODO
     networks:
       - internal
 
