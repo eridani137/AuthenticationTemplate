@@ -30,7 +30,8 @@ public class JwtService(IOptions<JwtConfig> config) : IJwtService
         {
             new(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
             new(JwtRegisteredClaimNames.Nickname, user.UserName!),
-            new(JwtRegisteredClaimNames.Jti, Guid.CreateVersion7().ToString())
+            new(JwtRegisteredClaimNames.Jti, Guid.CreateVersion7().ToString()),
+            new("AspNet.Identity.SecurityStamp", user.SecurityStamp!),
         };
 
         claims.AddRange(user.Roles.Select(role => new Claim(ClaimTypes.Role, role)));
@@ -53,11 +54,6 @@ public class JwtService(IOptions<JwtConfig> config) : IJwtService
 
     private string GenerateRefreshToken(ApplicationUser user)
     {
-        var refreshToken = Convert.ToBase64String(RandomNumberGenerator.GetBytes(config.Value.RefreshTokenLength));
-
-        user.RefreshToken = refreshToken;
-        user.RefreshTokenExpiryTime = DateTime.UtcNow.Add(config.Value.RefreshTokenDuration);
-
-        return refreshToken;
+        return Convert.ToBase64String(RandomNumberGenerator.GetBytes(config.Value.RefreshTokenLength));
     }
 }

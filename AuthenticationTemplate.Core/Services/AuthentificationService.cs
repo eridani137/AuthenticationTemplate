@@ -16,6 +16,10 @@ public class AuthentificationService(
     SignInManager<ApplicationUser> signInManager,
     IJwtService jwtService) : IAuthentificationService
 {
+    private const string RefreshTokenProvider = "AuthenticationTemplate";
+    private const string RefreshTokenName = "RefreshToken";
+    private const string RefreshTokenExpiryTimeName = "RefreshTokenExpiryTime";
+    
     public async Task<IResult> Register(RegisterRequest dto)
     {
         var user = dto.Map();
@@ -35,10 +39,7 @@ public class AuthentificationService(
 
         if (user is null || !await userManager.CheckPasswordAsync(user, request.Password))
         {
-            if (user is not null)
-            {
-                await userManager.AccessFailedAsync(user);
-            }
+            if (user is not null) await userManager.AccessFailedAsync(user);
 
             return Results.Problem(detail: "Неверный логин или пароль", statusCode: StatusCodes.Status401Unauthorized);
         }
@@ -74,29 +75,37 @@ public class AuthentificationService(
         await userManager.ResetAccessFailedCountAsync(user);
 
         var tokens = jwtService.GenerateKeyPair(user);
-        await userManager.UpdateAsync(user);
+        var refreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
+        await userManager.SetAuthenticationTokenAsync(user, RefreshTokenProvider, RefreshTokenName, tokens.RefreshToken);
+        await userManager.SetAuthenticationTokenAsync(user, RefreshTokenProvider, RefreshTokenExpiryTimeName, refreshTokenExpiryTime.ToString("o"));
 
         return Results.Ok(tokens);
     }
 
     public async Task<IResult> RefreshToken(RefreshTokenRequest request)
     {
-        var user = await userManager.Users.SingleOrDefaultAsync(u => u.RefreshToken == request.RefreshToken);
+        var user = await userManager.Users.SingleOrDefaultAsync(u =>
+            u.Tokens.Any(t =>
+                t.LoginProvider == RefreshTokenProvider &&
+                t.Name == RefreshTokenName &&
+                t.Value == request.RefreshToken));
 
-        if (user is null)
-        {
-            return Results.Unauthorized();
-        }
+        if (user is null) return Results.Unauthorized();
+        
+        var expiryTimeValue = await userManager.GetAuthenticationTokenAsync(user, RefreshTokenProvider, RefreshTokenExpiryTimeName);
 
-        if (user.RefreshTokenExpiryTime <= DateTime.UtcNow)
+        if (string.IsNullOrEmpty(expiryTimeValue) ||
+            DateTime.Parse(expiryTimeValue).ToUniversalTime() <= DateTime.UtcNow)
         {
-            user.ClearRefreshToken();
-            await userManager.UpdateAsync(user);
+            await userManager.RemoveAuthenticationTokenAsync(user, RefreshTokenProvider, RefreshTokenName);
+            await userManager.RemoveAuthenticationTokenAsync(user, RefreshTokenProvider, RefreshTokenExpiryTimeName);
             return Results.Unauthorized();
         }
 
         var accessToken = jwtService.GenerateToken(user);
-        return Results.Ok(new AuthResponse(accessToken, user.RefreshToken!));
+        var storedRefreshToken = await userManager.GetAuthenticationTokenAsync(user, RefreshTokenProvider, RefreshTokenName);
+        
+        return Results.Ok(new AuthResponse(accessToken, storedRefreshToken!));
     }
 
     public async Task<IResult> Logout(ClaimsPrincipal userPrincipal)
@@ -104,8 +113,10 @@ public class AuthentificationService(
         var user = await userManager.GetUserAsync(userPrincipal);
         if (user is null) return Results.Unauthorized();
 
-        user.ClearRefreshToken();
-        await userManager.UpdateAsync(user);
+        await userManager.UpdateSecurityStampAsync(user);
+        await userManager.RemoveAuthenticationTokenAsync(user, RefreshTokenProvider, RefreshTokenName);
+        await userManager.RemoveAuthenticationTokenAsync(user, RefreshTokenProvider, RefreshTokenExpiryTimeName);
+
         await signInManager.SignOutAsync();
 
         return Results.Ok();

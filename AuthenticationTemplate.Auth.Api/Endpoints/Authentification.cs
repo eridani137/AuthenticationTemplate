@@ -30,7 +30,7 @@ public class Authentification : ICarterModule
             .Produces(StatusCodes.Status429TooManyRequests)
             .WithName("Авторизация");
 
-        group.MapPost("/refresh",
+        group.MapPost("/refresh-token",
                 (RefreshTokenRequest request, IAuthentificationService service) => service.RefreshToken(request))
             .AddEndpointFilter<ValidationFilter<RefreshTokenRequest>>()
             .Produces<AuthResponse>()
