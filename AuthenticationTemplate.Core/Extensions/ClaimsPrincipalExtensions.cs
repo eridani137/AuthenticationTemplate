@@ -9,7 +9,7 @@ public static class ClaimsPrincipalExtensions
 {
     public static async Task<ApplicationUser?> GetUserFromPrincipalAsync(this ClaimsPrincipal userPrincipal, UserManager<ApplicationUser> userManager)
     {
-        var userId = userPrincipal.FindFirstValue(JwtRegisteredClaimNames.Sub);
+        var userId = userPrincipal.FindFirstValue(ClaimTypes.NameIdentifier);
         if (string.IsNullOrEmpty(userId))
         {
             return null;
