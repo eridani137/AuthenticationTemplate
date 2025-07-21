@@ -25,6 +25,7 @@ public static class ServiceExtensions
             identity.Password.RequiredUniqueChars = 1;
 
             identity.Tokens.AuthenticatorTokenProvider = TokenOptions.DefaultAuthenticatorProvider;
+            identity.SignIn.RequireConfirmedAccount = false;
         }, mongo =>
         {
             mongo.ConnectionString = configuration.GetConnectionString("MongoDb");

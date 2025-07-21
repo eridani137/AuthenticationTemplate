@@ -20,4 +20,11 @@ public static class ValidationRules
             .Matches("[0-9]").WithMessage("Пароль должен содержать хотя бы одну цифру")
             .Matches("[^a-zA-Z0-9]").WithMessage("Пароль должен содержать хотя бы один специальный символ");
     }
+
+    public static IRuleBuilderOptions<T, string> Valid2FaCode<T>(this IRuleBuilder<T, string> rule)
+    {
+        return rule
+            .NotEmpty().WithMessage("Введите код аутентификации")
+            .MinimumLength(6).WithMessage("Код должен содержать 6 цифр");
+    }
 }

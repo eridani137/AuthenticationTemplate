@@ -11,3 +11,9 @@ public record AuthResponse(string AccessToken, string RefreshToken);
 public record UserResponse(ObjectId Id, string Username);
 
 public record RefreshTokenRequest(string RefreshToken);
+
+public record Setup2FaRequest(string SharedKey, string QrCode);
+
+public record Enable2FaRequest(string Code);
+
+public record RecoveryCodesResponse(IEnumerable<string>? RecoveryCodes);

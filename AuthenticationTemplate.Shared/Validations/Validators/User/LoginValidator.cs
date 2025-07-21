@@ -9,5 +9,9 @@ public class LoginValidator : BaseValidator<LoginRequest>
     {
         RuleFor(x => x.Username).ValidUsername();
         RuleFor(x => x.Password).ValidPassword();
+        When(x => !string.IsNullOrWhiteSpace(x.TwoFactorCode), () =>
+        {
+            RuleFor(x => x.TwoFactorCode!).Valid2FaCode();
+        });
     }
 }
