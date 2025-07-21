@@ -29,6 +29,8 @@ public static class ServiceExtensions
         }, mongo =>
         {
             mongo.ConnectionString = configuration.GetConnectionString("MongoDb");
+            mongo.UsersCollection = "users";
+            mongo.RolesCollection = "roles";
         });
 
         return services;
