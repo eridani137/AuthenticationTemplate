@@ -128,6 +128,11 @@ public class AuthentificationService(
         var user = await userPrincipal.GetUserFromPrincipalAsync(userManager);
         if (user is null) return Results.Unauthorized();
 
+        if (await userManager.GetTwoFactorEnabledAsync(user))
+        {
+            return Results.Problem(detail: "2FA уже подключен", statusCode: StatusCodes.Status400BadRequest);
+        }
+
         await userManager.ResetAuthenticatorKeyAsync(user);
         var key = await userManager.GetAuthenticatorKeyAsync(user);
         var username = await userManager.GetUserNameAsync(user);
