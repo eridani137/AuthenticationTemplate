@@ -1,3 +1,4 @@
+using AuthenticationTemplate.Core.Interfaces;
 using AuthenticationTemplate.Core.Services;
 using AuthenticationTemplate.Shared.Validations.Validators.User;
 using FluentValidation;
@@ -11,7 +12,9 @@ public static class ServiceExtensions
     {
         services.AddValidatorsFromAssemblyContaining<LoginValidator>();
 
-        services.AddScoped<JwtService>();
+        services.AddScoped<IDatabaseSeeder, DatabaseSeeder>();
+        services.AddScoped<IJwtService, JwtService>();
+        services.AddScoped<IAuthentificationService, AuthentificationService>();
 
         return services;
     }

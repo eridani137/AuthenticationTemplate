@@ -3,6 +3,7 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using AuthenticationTemplate.Core.Entities;
+using AuthenticationTemplate.Core.Interfaces;
 using AuthenticationTemplate.Shared.Configs;
 using AuthenticationTemplate.Shared.DTOs;
 using Microsoft.Extensions.Options;
@@ -10,7 +11,7 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace AuthenticationTemplate.Core.Services;
 
-public class JwtService(IOptions<JwtConfig> config)
+public class JwtService(IOptions<JwtConfig> config) : IJwtService
 {
     public AuthResponse GenerateKeyPair(ApplicationUser user)
     {

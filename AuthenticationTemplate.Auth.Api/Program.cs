@@ -34,6 +34,6 @@ app.UseAuthorization();
 
 app.MapCarter();
 
-await InitApp.Init(app);
+await app.SeedDatabaseAsync();
 
 app.Run();

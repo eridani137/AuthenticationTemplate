@@ -14,6 +14,6 @@ public record RefreshTokenRequest(string RefreshToken);
 
 public record Setup2FaRequest(string SharedKey, string QrCode);
 
-public record Enable2FaRequest(string Code);
+public record AuthenticatorCodeRequest(string Code);
 
 public record RecoveryCodesResponse(IEnumerable<string>? RecoveryCodes);

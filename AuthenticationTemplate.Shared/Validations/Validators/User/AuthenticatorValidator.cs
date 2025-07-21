@@ -3,9 +3,9 @@ using AuthenticationTemplate.Shared.Validations.Abstractions;
 
 namespace AuthenticationTemplate.Shared.Validations.Validators.User;
 
-public class Setup2FaValidator : BaseValidator<Enable2FaRequest>
+public class AuthenticatorValidator : BaseValidator<AuthenticatorCodeRequest>
 {
-    public Setup2FaValidator()
+    public AuthenticatorValidator()
     {
         RuleFor(x => x.Code).Valid2FaCode();
     }
