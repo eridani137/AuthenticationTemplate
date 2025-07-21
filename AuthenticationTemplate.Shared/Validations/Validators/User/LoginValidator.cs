@@ -3,7 +3,7 @@ using AuthenticationTemplate.Shared.Validations.Abstractions;
 
 namespace AuthenticationTemplate.Shared.Validations.Validators.User;
 
-public class LoginValidator : BaseValidator<LoginDto>
+public class LoginValidator : BaseValidator<LoginRequest>
 {
     public LoginValidator()
     {

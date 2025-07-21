@@ -1,5 +1,6 @@
 using AspNetCore.Identity.Mongo;
 using AuthenticationTemplate.Core.Entities;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using MongoDB.Driver;
@@ -14,17 +15,19 @@ public static class ServiceExtensions
         
         services.AddScoped<MongoContext>();
 
-        services.AddIdentityMongoDbProvider<ApplicationUser>(identityOptions =>
+        services.AddIdentityMongoDbProvider<ApplicationUser>(identity =>
         {
-            identityOptions.Password.RequiredLength = 8;
-            identityOptions.Password.RequireDigit = true;
-            identityOptions.Password.RequireLowercase = true;
-            identityOptions.Password.RequireNonAlphanumeric = true;
-            identityOptions.Password.RequireUppercase = true;
-            identityOptions.Password.RequiredUniqueChars = 1;
-        }, mongoDbOptions =>
+            identity.Password.RequiredLength = 8;
+            identity.Password.RequireDigit = true;
+            identity.Password.RequireLowercase = true;
+            identity.Password.RequireNonAlphanumeric = true;
+            identity.Password.RequireUppercase = true;
+            identity.Password.RequiredUniqueChars = 1;
+
+            identity.Tokens.AuthenticatorTokenProvider = TokenOptions.DefaultAuthenticatorProvider;
+        }, mongo =>
         {
-            mongoDbOptions.ConnectionString = configuration.GetConnectionString("MongoDb");
+            mongo.ConnectionString = configuration.GetConnectionString("MongoDb");
         });
 
         return services;

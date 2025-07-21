@@ -5,11 +5,11 @@ namespace AuthenticationTemplate.Core.Mappings;
 
 public static class UserMapper
 {
-    public static ApplicationUser Map(this RegistrationDto dto)
+    public static ApplicationUser Map(this RegisterRequest request)
     {
         return new ApplicationUser()
         {
-            UserName = dto.Username
+            UserName = request.Username
         };
     }
 }

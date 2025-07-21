@@ -4,25 +4,26 @@ using System.Security.Cryptography;
 using System.Text;
 using AuthenticationTemplate.Core.Entities;
 using AuthenticationTemplate.Shared.Configs;
+using AuthenticationTemplate.Shared.DTOs;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 
 namespace AuthenticationTemplate.Core.Services;
 
-public class JwtService(IOptions<JwtConfig> jwtConfig)
+public class JwtService(IOptions<JwtConfig> config)
 {
-    public TokenPair GenerateKeyPair(ApplicationUser user)
+    public AuthResponse GenerateKeyPair(ApplicationUser user)
     {
         var accessToken = GenerateToken(user);
         var refreshToken = GenerateRefreshToken(user);
 
-        return new TokenPair(accessToken, refreshToken);
+        return new AuthResponse(accessToken, refreshToken);
     }
 
     public string GenerateToken(ApplicationUser user)
     {
         var tokenHandler = new JwtSecurityTokenHandler();
-        var secret = Encoding.ASCII.GetBytes(jwtConfig.Value.Secret);
+        var secret = Encoding.ASCII.GetBytes(config.Value.Secret);
 
         var claims = new List<Claim>
         {
@@ -36,9 +37,9 @@ public class JwtService(IOptions<JwtConfig> jwtConfig)
         var tokenDescriptor = new SecurityTokenDescriptor()
         {
             Subject = new ClaimsIdentity(claims),
-            Expires = DateTime.UtcNow.Add(jwtConfig.Value.AccessTokenDuration),
-            Issuer = jwtConfig.Value.Issuer,
-            Audience = jwtConfig.Value.Audience,
+            Expires = DateTime.UtcNow.Add(config.Value.AccessTokenDuration),
+            Issuer = config.Value.Issuer,
+            Audience = config.Value.Audience,
             SigningCredentials =
                 new SigningCredentials(new SymmetricSecurityKey(secret), SecurityAlgorithms.HmacSha256Signature)
         };
@@ -51,13 +52,11 @@ public class JwtService(IOptions<JwtConfig> jwtConfig)
 
     private string GenerateRefreshToken(ApplicationUser user)
     {
-        var refreshToken = Convert.ToBase64String(RandomNumberGenerator.GetBytes(jwtConfig.Value.RefreshTokenLength));
+        var refreshToken = Convert.ToBase64String(RandomNumberGenerator.GetBytes(config.Value.RefreshTokenLength));
 
         user.RefreshToken = refreshToken;
-        user.RefreshTokenExpiryTime = DateTime.UtcNow.Add(jwtConfig.Value.RefreshTokenDuration);
+        user.RefreshTokenExpiryTime = DateTime.UtcNow.Add(config.Value.RefreshTokenDuration);
 
         return refreshToken;
     }
 }
-
-public record TokenPair(string AccessToken, string RefreshToken);

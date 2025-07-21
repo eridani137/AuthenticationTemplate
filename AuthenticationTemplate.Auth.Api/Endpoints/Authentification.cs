@@ -20,7 +20,7 @@ public class Authentification : ICarterModule
             .WithTags("Аутентификация");
 
         group.MapPost("/register",
-                async (RegistrationDto dto, UserManager<ApplicationUser> userManager) =>
+                async (RegisterRequest dto, UserManager<ApplicationUser> userManager) =>
                 {
                     var user = dto.Map();
 
@@ -36,22 +36,22 @@ public class Authentification : ICarterModule
                         Id = user.Id.ToString()
                     });
                 })
-            .AddEndpointFilter<ValidationFilter<RegistrationDto>>()
+            .AddEndpointFilter<ValidationFilter<RegisterRequest>>()
             .Produces(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status400BadRequest)
             .WithName("Регистрация");
 
         group.MapPost("/login",
-                async (LoginDto dto, UserManager<ApplicationUser> userManager,
+                async (LoginRequest request, UserManager<ApplicationUser> userManager,
                     SignInManager<ApplicationUser> signInManager, JwtService jwtService) =>
                 {
-                    var user = await userManager.FindByNameAsync(dto.Username);
+                    var user = await userManager.FindByNameAsync(request.Username);
                     if (user is null)
                     {
-                        return Results.Unauthorized();
+                        return Results.NotFound();
                     }
 
-                    var result = await signInManager.PasswordSignInAsync(user, dto.Password, false, true);
+                    var result = await signInManager.PasswordSignInAsync(user, request.Password, false, true);
                     if (result.Succeeded)
                     {
                         var keyPair = jwtService.GenerateKeyPair(user);
@@ -70,16 +70,17 @@ public class Authentification : ICarterModule
                         Message = $"Повторите через {minutesLeft} мин.",
                     }, statusCode: StatusCodes.Status429TooManyRequests);
                 })
-            .AddEndpointFilter<ValidationFilter<LoginDto>>()
-            .Produces<TokenPair>()
+            .AddEndpointFilter<ValidationFilter<LoginRequest>>()
+            .Produces<AuthResponse>()
             .Produces(StatusCodes.Status401Unauthorized)
+            .Produces(StatusCodes.Status404NotFound)
             .Produces(StatusCodes.Status429TooManyRequests)
             .WithName("Авторизация");
 
         group.MapPost("/refresh",
-                async (RefreshTokenDto dto, UserManager<ApplicationUser> userManager, JwtService jwtService) =>
+                async (RefreshTokenRequest request, UserManager<ApplicationUser> userManager, JwtService jwtService) =>
                 {
-                    var user = await userManager.Users.SingleOrDefaultAsync(u => u.RefreshToken == dto.RefreshToken);
+                    var user = await userManager.Users.SingleOrDefaultAsync(u => u.RefreshToken == request.RefreshToken);
 
                     if (user is null)
                     {
@@ -96,10 +97,10 @@ public class Authentification : ICarterModule
 
                     var accessToken = jwtService.GenerateToken(user);
 
-                    return Results.Ok(new TokenPair(accessToken, user.RefreshToken!));
+                    return Results.Ok(new AuthResponse(accessToken, user.RefreshToken!));
                 })
-            .AddEndpointFilter<ValidationFilter<RefreshTokenDto>>()
-            .Produces<TokenPair>()
+            .AddEndpointFilter<ValidationFilter<RefreshTokenRequest>>()
+            .Produces<AuthResponse>()
             .Produces(StatusCodes.Status401Unauthorized)
             .WithName("Обновление токена доступа");
 

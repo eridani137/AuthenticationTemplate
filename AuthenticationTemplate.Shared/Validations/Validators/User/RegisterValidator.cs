@@ -4,7 +4,7 @@ using FluentValidation;
 
 namespace AuthenticationTemplate.Shared.Validations.Validators.User;
 
-public class RegisterValidator : BaseValidator<RegistrationDto>
+public class RegisterValidator : BaseValidator<RegisterRequest>
 {
     public RegisterValidator()
     {

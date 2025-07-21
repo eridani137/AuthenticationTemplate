@@ -6,11 +6,11 @@ using Microsoft.Extensions.Options;
 
 namespace AuthenticationTemplate.Shared.Validations.Validators.User;
 
-public class RefreshTokenValidator : BaseValidator<RefreshTokenDto>
+public class RefreshTokenValidator : BaseValidator<RefreshTokenRequest>
 {
-    public RefreshTokenValidator(IOptions<JwtConfig> jwtConfig)
+    public RefreshTokenValidator(IOptions<JwtConfig> config)
     {
-        var base64Length = Convert.ToBase64String(new byte[jwtConfig.Value.RefreshTokenLength]).Length;
+        var base64Length = Convert.ToBase64String(new byte[config.Value.RefreshTokenLength]).Length;
 
         RuleFor(x => x.RefreshToken)
             .NotEmpty().WithMessage("RefreshToken обязателен")
