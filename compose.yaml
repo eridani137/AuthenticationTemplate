@@ -9,8 +9,6 @@
       - ASPNETCORE_URLS=http://+:5544
       - OTEL_SERVICE_NAME=Auth.Api
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://seq:5341
-    ports:
-      - "5544:5544" # TODO
     depends_on:
       - mongo
       - seq
@@ -22,8 +20,8 @@
     restart: unless-stopped
     volumes:
       - ./mongo_data:/data/db
-    ports:
-      - "27017:27017" # TODO
+#    ports:
+#      - "27017:27017"
     networks:
       - internal
   
@@ -36,9 +34,18 @@
       - ACCEPT_EULA=Y
       - SEQ_FIRSTRUN_ADMINPASSWORD=Qwerty123_
       - SEQ_OPENTELEMETRY_ENABLED=True
+    networks:
+      - internal
+        
+  nginx:
+    image: nginx:latest
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
     ports:
-      - "8081:80" # TODO
-      - "5341:5341" # TODO
+      - "80:80"
+    depends_on:
+      - auth.api
+      - seq
     networks:
       - internal
 
