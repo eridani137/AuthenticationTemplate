@@ -25,7 +25,7 @@ public static class ConfigureLogging
         var serviceName = Environment.GetEnvironmentVariable("OTEL_SERVICE_NAME")!;
         var levelSwitch = new LoggingLevelSwitch();
 
-        Log.Logger = new LoggerConfiguration()
+        var configuration = new LoggerConfiguration()
             .MinimumLevel.ControlledBy(levelSwitch)
             .MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Warning)
             .MinimumLevel.Override("System.Net.Http.HttpClient", LogEventLevel.Warning)
@@ -36,9 +36,14 @@ public static class ConfigureLogging
             .Enrich.WithExceptionDetails()
             .Enrich.WithProperty("ServiceName", serviceName)
             .WriteTo.Console(outputTemplate: outputTemplate, levelSwitch: levelSwitch)
-            .WriteTo.File($"{logsPath}/.log", rollingInterval: RollingInterval.Day, outputTemplate: outputTemplate, levelSwitch: levelSwitch)
-            .WriteTo.Seq(endpoint, controlLevelSwitch: levelSwitch)
-            .CreateLogger();
+            .WriteTo.File($"{logsPath}/.log", rollingInterval: RollingInterval.Day, outputTemplate: outputTemplate, levelSwitch: levelSwitch);
+
+        if (!string.IsNullOrWhiteSpace(endpoint) && !string.IsNullOrWhiteSpace(serviceName))
+        {
+            configuration.WriteTo.Seq(endpoint, controlLevelSwitch: levelSwitch);
+        }
+        
+        Log.Logger = configuration.CreateLogger();
         
         builder.Host.UseSerilog(Log.Logger);
     }

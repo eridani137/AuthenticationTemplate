@@ -2,6 +2,7 @@
 
 WORKDIR /app
 EXPOSE 5544
+EXPOSE 55443
 
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 ARG BUILD_CONFIGURATION=Release
@@ -21,6 +22,6 @@ RUN dotnet publish "./AuthenticationTemplate.Auth.Api.csproj" -c $BUILD_CONFIGUR
 
 FROM base AS final
 WORKDIR /app
-ENV HTTP_PORTS="" HTTPS_PORTS=""
+ENV HTTP_PORTS="5544" HTTPS_PORTS=""
 COPY --from=publish /app/publish .
 ENTRYPOINT ["dotnet", "AuthenticationTemplate.Auth.Api.dll"]

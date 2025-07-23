@@ -1,5 +1,6 @@
 using AuthenticationTemplate.Core.Interfaces;
 using AuthenticationTemplate.Core.Services;
+using AuthenticationTemplate.Shared.Validations.Abstractions;
 using AuthenticationTemplate.Shared.Validations.Validators.User;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
@@ -10,7 +11,7 @@ public static class ServiceExtensions
 {
     public static IServiceCollection AddApplication(this IServiceCollection services)
     {
-        services.AddValidatorsFromAssemblyContaining<LoginValidator>();
+        services.AddValidatorsFromAssembly(typeof(BaseValidator<>).Assembly);
 
         services.AddScoped<IDatabaseSeeder, DatabaseSeeder>();
         services.AddScoped<IJwtService, JwtService>();
