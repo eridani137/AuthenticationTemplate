@@ -1,0 +1,109 @@
+@page "/login"
+@using AuthenticationTemplate.Shared.DTOs
+@using AuthenticationTemplate.Shared.Validations.Validators.User
+
+<MudContainer MaxWidth="MaxWidth.Small" Class="d-flex justify-center align-center" Style="min-height: 80vh;">
+    <MudPaper Elevation="12" Class="pa-4" Style="width: 500px;">
+        <MudText Typo="Typo.h4" Align="Align.Center" Class="mb-4">Авторизация</MudText>
+
+        <MudForm @ref="_form" Model="@_loginDto" Validation="@(_validator.ValidateValue)" ValidationDelay="0">
+            <MudTextField
+                @bind-Value="_loginDto.Username"
+                Label="Логин"
+                Variant="Variant.Outlined"
+                Margin="Margin.Normal"
+                For="@(() => _loginDto.Username)"
+                Immediate="true"
+                FullWidth="true"/>
+
+            <MudTextField
+                @bind-Value="_loginDto.Password"
+                Label="Пароль"
+                Variant="Variant.Outlined"
+                Margin="Margin.Normal"
+                InputType="InputType.Password"
+                For="@(() => _loginDto.Password)"
+                Immediate="true"
+                FullWidth="true"/>
+
+            @* @if (_needTwoFactor) *@
+            @* { *@
+            @*     <MudForm @ref="_twoFactorForm" Model="@_twoFactorVerifyDto" *@
+            @*              Validation="@(_twoFactorValidator.ValidateValue)" ValidationDelay="0"> *@
+            @*         <MudTextField *@
+            @*             @bind-Value="_twoFactorVerifyDto.Code" *@
+            @*             Label="Код аутентификации" *@
+            @*             Variant="Variant.Outlined" *@
+            @*             Margin="Margin.Normal" *@
+            @*             For="@(() => _twoFactorVerifyDto.Code)" *@
+            @*             Immediate="true" *@
+            @*             FullWidth="true" *@
+            @*             MaxLength="6"/> *@
+            @*     </MudForm> *@
+            @* } *@
+
+            @if (!string.IsNullOrEmpty(_errorMessage))
+            {
+                <MudAlert Severity="Severity.Error" Class="mt-3 mb-3">@_errorMessage</MudAlert>
+            }
+
+            <MudButton
+                Variant="Variant.Filled"
+                Color="Color.Primary"
+                FullWidth="true"
+                OnClick="@Submit"
+                Class="mt-4">
+                Войти
+            </MudButton>
+        </MudForm>
+    </MudPaper>
+</MudContainer>
+
+@code {
+    
+    private readonly LoginRequest _loginDto = new("", "", "");
+    private string? _errorMessage;
+    private MudForm _form = null!;
+
+    private readonly LoginValidator _validator = new();
+
+    private async Task Submit()
+    {
+        _errorMessage = null;
+
+        await _form.Validate();
+
+        // if (_form.IsValid)
+        // {
+        //     if (_needTwoFactor)
+        //     {
+        //         await _twoFactorForm!.Validate();
+        //
+        //         if (!_twoFactorForm.IsValid) return;
+        //
+        //         _loginDto.TwoFactorCode = _twoFactorVerifyDto.Code;
+        //     }
+        //
+        //     var response = await UserService.Login(_loginDto);
+        //
+        //     switch (response.Code)
+        //     {
+        //         case HttpStatusCode.OK when !string.IsNullOrEmpty(response.Content):
+        //             await AuthStateProvider.MarkUserAsAuthenticated(response.Content);
+        //             NavigationManager.NavigateTo("/", forceLoad: true);
+        //             break;
+        //         case HttpStatusCode.PreconditionRequired:
+        //             _needTwoFactor = true;
+        //             break;
+        //         case HttpStatusCode.BadRequest:
+        //             _errorMessage = response.Content ?? "Ошибка аутентификации";
+        //             break;
+        //         case HttpStatusCode.Unauthorized:
+        //         default:
+        //             _errorMessage = "Ошибка аутентификации";
+        //             break;
+        //     }
+        // }
+    }
+    
+}

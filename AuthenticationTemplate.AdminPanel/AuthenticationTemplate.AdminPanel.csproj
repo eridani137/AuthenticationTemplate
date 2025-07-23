@@ -7,7 +7,6 @@
         <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
         <PublishSingleFile>false</PublishSingleFile>
         <EnableEmbeddedStaticWebAssets>true</EnableEmbeddedStaticWebAssets>
-        <StaticWebAssetBasePath>_content</StaticWebAssetBasePath>
     </PropertyGroup>
 
     <ItemGroup>

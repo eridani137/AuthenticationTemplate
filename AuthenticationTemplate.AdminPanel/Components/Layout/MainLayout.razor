@@ -1,5 +1,7 @@
-﻿@using Microsoft.AspNetCore.Components.Authorization
+﻿@using Blazored.LocalStorage
+@using Microsoft.AspNetCore.Components.Authorization
 @inherits LayoutComponentBase
+@inject ILocalStorageService LocalStorage
 
 <MudThemeProvider @ref="_themeProvider" Theme="_theme" IsDarkMode="_isDarkMode"/>
 <MudPopoverProvider/>
@@ -119,7 +121,7 @@
     private async Task DarkModeToggle()
     {
         _isDarkMode = !_isDarkMode;
-        // await LocalStorage.SetItemAsync(ThemeKey, _isDarkMode);
+        await LocalStorage.SetItemAsync(ThemeKey, _isDarkMode);
     }
 
     private const string Primary = "#663882";

@@ -1,6 +1,8 @@
 using AuthenticationTemplate.AdminPanel.Components;
+using AuthenticationTemplate.AdminPanel.Services;
 using AuthenticationTemplate.Core.Configuration;
 using Blazored.LocalStorage;
+using Microsoft.AspNetCore.Components.Authorization;
 using MudBlazor;
 using MudBlazor.Services;
 
@@ -21,7 +23,11 @@ builder.Services.AddMudServices(c =>
     c.SnackbarConfiguration.ShowTransitionDuration = 500;
     c.SnackbarConfiguration.SnackbarVariant = Variant.Filled;
 });
+
 builder.Services.AddBlazoredLocalStorage();
+
+builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthenticationStateProvider>();
+builder.Services.AddScoped<CustomAuthenticationStateProvider>();
 
 ConfigureCors.Configure(builder);
 ConfigureJwt.Configure(builder);
@@ -37,6 +43,8 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseStaticFiles();
+app.MapStaticAssets();
 
 app.UseAntiforgery();
 

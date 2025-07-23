@@ -1,9 +1,35 @@
-﻿@using Microsoft.AspNetCore.Components.Authorization
+﻿@using AuthenticationTemplate.AdminPanel.Components.Layout
+@using AuthenticationTemplate.AdminPanel.Services
+@inject CustomAuthenticationStateProvider AuthStateProvider
+
 <CascadingAuthenticationState>
     <Router AppAssembly="typeof(Program).Assembly">
         <Found Context="routeData">
-            <RouteView RouteData="routeData" DefaultLayout="typeof(Layout.MainLayout)"/>
-            <FocusOnNavigate RouteData="routeData" Selector="h1"/>
+            <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)">
+                <NotAuthorized>
+                    <RedirectToLogin/>
+                </NotAuthorized>
+                <Authorizing>
+                    <p>Проверка авторизации...</p>
+                </Authorizing>
+            </AuthorizeRouteView>
+            <FocusOnNavigate RouteData="@routeData" Selector="h1"/>
         </Found>
     </Router>
 </CascadingAuthenticationState>
+
+@code {
+    private bool _initialized;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && !_initialized)
+        {
+            await AuthStateProvider.InitializeAsync();
+            _initialized = true;
+
+            StateHasChanged();
+        }
+    }
+
+}
