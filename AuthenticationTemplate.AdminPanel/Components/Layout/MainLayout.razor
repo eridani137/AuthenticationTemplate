@@ -91,8 +91,17 @@
     {
         if (firstRender)
         {
-            _isDarkMode = await _themeProvider.GetSystemDarkModeAsync();
-            StateHasChanged();
+            var hasValue = await LocalStorage.ContainKeyAsync(ThemeKey);
+            if (hasValue)
+            {
+                _isDarkMode = await LocalStorage.GetItemAsync<bool>(ThemeKey);
+            }
+            else
+            {
+                _isDarkMode = await _themeProvider.GetSystemDarkModeAsync();
+            }
+        
+            await InvokeAsync(StateHasChanged);
         }
     }
 
@@ -106,11 +115,6 @@
             PaletteDark = _darkPalette,
             LayoutProperties = new LayoutProperties()
         };
-
-        // if (await LocalStorage.ContainKeyAsync(ThemeKey))
-        // {
-        //     _isDarkMode = await LocalStorage.GetItemAsync<bool>(ThemeKey);
-        // }
     }
 
     private void ToggleDrawer()
@@ -122,6 +126,7 @@
     {
         _isDarkMode = !_isDarkMode;
         await LocalStorage.SetItemAsync(ThemeKey, _isDarkMode);
+        await InvokeAsync(StateHasChanged);
     }
 
     private const string Primary = "#663882";
