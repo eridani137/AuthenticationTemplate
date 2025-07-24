@@ -91,15 +91,17 @@
     {
         if (firstRender)
         {
-            var hasValue = await LocalStorage.ContainKeyAsync(ThemeKey);
-            if (hasValue)
-            {
-                _isDarkMode = await LocalStorage.GetItemAsync<bool>(ThemeKey);
-            }
-            else
-            {
-                _isDarkMode = await _themeProvider.GetSystemDarkModeAsync();
-            }
+            // var hasValue = await LocalStorage.ContainKeyAsync(ThemeKey);
+            // if (hasValue)
+            // {
+            //     _isDarkMode = await LocalStorage.GetItemAsync<bool>(ThemeKey);
+            // }
+            // else
+            // {
+            //     _isDarkMode = await _themeProvider.GetSystemDarkModeAsync();
+            // }
+            
+            _isDarkMode = await _themeProvider.GetSystemDarkModeAsync();
         
             await InvokeAsync(StateHasChanged);
         }
@@ -125,7 +127,7 @@
     private async Task DarkModeToggle()
     {
         _isDarkMode = !_isDarkMode;
-        await LocalStorage.SetItemAsync(ThemeKey, _isDarkMode);
+        // await LocalStorage.SetItemAsync(ThemeKey, _isDarkMode);
         await InvokeAsync(StateHasChanged);
     }
 

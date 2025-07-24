@@ -3,6 +3,7 @@ using AuthenticationTemplate.AdminPanel.Services;
 using AuthenticationTemplate.Core.Configuration;
 using Blazored.LocalStorage;
 using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.AspNetCore.HttpOverrides;
 using MudBlazor;
 using MudBlazor.Services;
 
@@ -10,6 +11,15 @@ var builder = WebApplication.CreateBuilder(args);
 
 ConfigureLogging.Configure(builder);
 ConfigureOpenTelemetry.Configure(builder);
+
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | 
+                               ForwardedHeaders.XForwardedProto |
+                               ForwardedHeaders.XForwardedHost;
+    options.KnownNetworks.Clear();
+    options.KnownProxies.Clear();
+});
 
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
@@ -24,6 +34,15 @@ builder.Services.AddMudServices(c =>
     c.SnackbarConfiguration.SnackbarVariant = Variant.Filled;
 });
 
+builder.Services.AddSignalR(options =>
+{
+    options.ClientTimeoutInterval = TimeSpan.FromSeconds(60);
+    options.KeepAliveInterval = TimeSpan.FromSeconds(15);
+    options.HandshakeTimeout = TimeSpan.FromSeconds(30);
+    options.MaximumReceiveMessageSize = 1024 * 1024;
+    options.EnableDetailedErrors = builder.Environment.IsDevelopment();
+});
+
 builder.Services.AddBlazoredLocalStorage();
 
 builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthenticationStateProvider>();
@@ -35,16 +54,21 @@ builder.Services.AddAuthorizationCore();
 
 var app = builder.Build();
 
+app.UseForwardedHeaders();
+
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error", createScopeForErrors: true);
-    app.UseHsts();
 }
 
-app.UseHttpsRedirection();
+app.UseCors("AllowAll");
 
 app.UseStaticFiles();
-app.MapStaticAssets();
+
+app.UseRouting();
+
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.UseAntiforgery();
 

@@ -14,7 +14,7 @@
       - seq
     networks:
       - internal
-      
+  
   admin-panel:
     image: adminpanel
     build:
@@ -30,7 +30,7 @@
       - seq
     networks:
       - internal
-    
+  
   
   mongo:
     image: mongodb/mongodb-community-server:latest
@@ -53,7 +53,7 @@
       - SEQ_OPENTELEMETRY_ENABLED=True
     networks:
       - internal
-        
+  
   nginx:
     image: nginx:latest
     volumes:
