@@ -14,7 +14,7 @@ ConfigureOpenTelemetry.Configure(builder);
 
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
 {
-    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | 
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor |
                                ForwardedHeaders.XForwardedProto |
                                ForwardedHeaders.XForwardedHost;
     options.KnownNetworks.Clear();
@@ -50,20 +50,26 @@ builder.Services.AddScoped<CustomAuthenticationStateProvider>();
 
 ConfigureCors.Configure(builder);
 ConfigureJwt.Configure(builder);
+
 builder.Services.AddAuthorizationCore();
 
 var app = builder.Build();
 
 app.UseForwardedHeaders();
 
-if (!app.Environment.IsDevelopment())
+if (app.Environment.IsDevelopment())
+{
+    app.MapStaticAssets();
+    app.UseDeveloperExceptionPage();
+}
+else
 {
     app.UseExceptionHandler("/Error", createScopeForErrors: true);
+    app.UseHsts();
+    app.UseStaticFiles();
 }
 
 app.UseCors("AllowAll");
-
-app.UseStaticFiles();
 
 app.UseRouting();
 

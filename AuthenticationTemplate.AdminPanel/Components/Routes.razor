@@ -1,35 +1,18 @@
 ﻿@using AuthenticationTemplate.AdminPanel.Components.Layout
 @using AuthenticationTemplate.AdminPanel.Services
-@inject CustomAuthenticationStateProvider AuthStateProvider
 
 <CascadingAuthenticationState>
     <Router AppAssembly="typeof(Program).Assembly">
         <Found Context="routeData">
             <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)">
-                @* <NotAuthorized> *@
-                @*     <RedirectToLogin/> *@
-                @* </NotAuthorized> *@
+                <NotAuthorized>
+                    <RedirectToLogin/>
+                </NotAuthorized>
                 <Authorizing>
-                    <p>Проверка авторизации...</p>
+                    <p>Пожалуйста, подождите, мы проверяем ваши права доступа...</p>
                 </Authorizing>
             </AuthorizeRouteView>
             <FocusOnNavigate RouteData="@routeData" Selector="h1"/>
         </Found>
     </Router>
 </CascadingAuthenticationState>
-
-@code {
-    private bool _initialized;
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender && !_initialized)
-        {
-            await AuthStateProvider.InitializeAsync();
-            _initialized = true;
-
-            StateHasChanged();
-        }
-    }
-
-}
