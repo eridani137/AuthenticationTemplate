@@ -48,14 +48,15 @@ public class CustomAuthenticationStateProvider(ILocalStorageService localStorage
         // }
     }
 
-    public Task InitializeAsync()
+    public async Task InitializeAsync()
     {
-        if (_isInitialized) return Task.CompletedTask;
+        if (_isInitialized) return;
 
         _isInitialized = true;
-        NotifyAuthenticationStateChanged(GetAuthenticationStateAsync());
         
-        return Task.CompletedTask;
+        Token = await GetTokenFromLocalStorage();
+        
+        NotifyAuthenticationStateChanged(GetAuthenticationStateAsync());
     }
 
     public async Task MarkUserAsAuthenticated(AuthResponse response)

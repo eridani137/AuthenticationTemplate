@@ -1,8 +1,11 @@
 @page "/login"
 @using AuthenticationTemplate.AdminPanel.Services
+@using AuthenticationTemplate.Shared.Authentication
 @using AuthenticationTemplate.Shared.DTOs
 @using AuthenticationTemplate.Shared.Validations.Validators.User
 @inject AuthService AuthService
+@inject CustomAuthenticationStateProvider AuthStateProvider
+@inject NavigationManager NavigationManager
 @attribute [AllowAnonymous]
 
 <MudContainer MaxWidth="MaxWidth.Small" Class="d-flex justify-center align-center" Style="min-height: 80vh;">
@@ -80,7 +83,8 @@
 
             if (result.AuthResponse is not null && !result.Require2FaCode)
             {
-                
+                await AuthStateProvider.MarkUserAsAuthenticated(result.AuthResponse);
+                NavigationManager.NavigateTo("/", forceLoad: true);
             }
             else if (result.AuthResponse is null && result.Require2FaCode)
             {

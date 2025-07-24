@@ -1,7 +1,7 @@
 ﻿@using AuthenticationTemplate.Shared.Authentication
 @inherits LayoutComponentBase
 @inject ILocalStorageService LocalStorage
-@inject CustomAuthenticationStateProvider AuthenticationStateProvider
+@inject CustomAuthenticationStateProvider AuthStateProvider
 
 <MudThemeProvider @ref="_themeProvider" Theme="_theme" IsDarkMode="_isDarkMode"/>
 <MudPopoverProvider/>
@@ -101,7 +101,7 @@
                 _isDarkMode = await _themeProvider.GetSystemDarkModeAsync();
             }
 
-            await AuthenticationStateProvider.InitializeAsync();
+            await AuthStateProvider.InitializeAsync();
         
             await InvokeAsync(StateHasChanged);
         }

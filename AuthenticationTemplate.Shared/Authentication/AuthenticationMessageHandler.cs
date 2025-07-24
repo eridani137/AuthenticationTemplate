@@ -5,17 +5,17 @@ using Microsoft.AspNetCore.Components;
 namespace AuthenticationTemplate.Shared.Authentication;
 
 public class AuthenticationMessageHandler(
-    CustomAuthenticationStateProvider customAuthStateProvider,
+    CustomAuthenticationStateProvider authStateProvider,
     NavigationManager navigationManager)
     : DelegatingHandler
 {
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
-        if (!string.IsNullOrEmpty(customAuthStateProvider.Token))
+        if (!string.IsNullOrEmpty(authStateProvider.Token))
         {
-            if (CustomAuthenticationStateProvider.IsTokenExpired(customAuthStateProvider.Token))
+            if (CustomAuthenticationStateProvider.IsTokenExpired(authStateProvider.Token))
             {
-                await customAuthStateProvider.MarkUserAsLoggedOut();
+                await authStateProvider.MarkUserAsLoggedOut();
                 
                 _ = Task.Run(() => 
                 {
@@ -25,7 +25,7 @@ public class AuthenticationMessageHandler(
                 return new HttpResponseMessage(HttpStatusCode.Unauthorized);
             }
             
-            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", customAuthStateProvider.Token);
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", authStateProvider.Token);
         }
 
         var response = await base.SendAsync(request, cancellationToken);
