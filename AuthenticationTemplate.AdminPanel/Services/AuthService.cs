@@ -15,20 +15,9 @@ public class AuthService(HttpClient client)
 
         if (response.StatusCode == HttpStatusCode.Unauthorized)
         {
-            var problem = await response.Content
-                .ReadFromJsonAsync<ProblemDetails>(new JsonSerializerOptions
-                {
-                    PropertyNameCaseInsensitive = true
-                });
-
-            if (problem is not null)
+            if (await response.HasRequired2FaCode() is { } required2FaCode)
             {
-                if (problem.Extensions.TryGetValue("2FARequired", out var obj) &&
-                    obj is JsonElement { ValueKind: JsonValueKind.True })
-                {
-                    return new ClientAuthResponse(null, true, response.StatusCode, problem.Detail);
-                }
-                
+                return required2FaCode;
             }
         }
         

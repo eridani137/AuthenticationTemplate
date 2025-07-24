@@ -1,8 +1,8 @@
 using System.Net.Http.Headers;
+using AuthenticationTemplate.AdminPanel.Authentication;
 using AuthenticationTemplate.AdminPanel.Components;
 using AuthenticationTemplate.AdminPanel.Services;
 using AuthenticationTemplate.Core.Configuration;
-using AuthenticationTemplate.Shared.Authentication;
 using AuthenticationTemplate.Shared.Configs;
 using Blazored.LocalStorage;
 using Microsoft.AspNetCore.Components.Authorization;

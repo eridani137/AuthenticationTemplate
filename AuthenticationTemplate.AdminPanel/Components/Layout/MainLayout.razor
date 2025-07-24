@@ -1,7 +1,8 @@
-﻿@using AuthenticationTemplate.Shared.Authentication
+﻿@using AuthenticationTemplate.AdminPanel.Authentication
 @inherits LayoutComponentBase
 @inject ILocalStorageService LocalStorage
 @inject CustomAuthenticationStateProvider AuthStateProvider
+@inject NavigationManager Navigation
 
 <MudThemeProvider @ref="_themeProvider" Theme="_theme" IsDarkMode="_isDarkMode"/>
 <MudPopoverProvider/>
@@ -100,8 +101,6 @@
             {
                 _isDarkMode = await _themeProvider.GetSystemDarkModeAsync();
             }
-
-            await AuthStateProvider.InitializeAsync();
         
             await InvokeAsync(StateHasChanged);
         }
@@ -192,14 +191,15 @@
         false => Icons.Material.Outlined.DarkMode,
     };
 
-    private async Task NavigateToSettings()
+    private Task NavigateToSettings()
     {
-        // Navigation.NavigateTo("/settings");
+        Navigation.NavigateTo("/settings");
+        return Task.CompletedTask;
     }
     
     private async Task Logout()
     {
-        // await AuthStateProvider.MarkUserAsLoggedOut();
-        // Navigation.NavigateTo("/login", true);
+        await AuthStateProvider.MarkUserAsLoggedOut();
+        Navigation.NavigateTo("/login", true);
     }
 }
