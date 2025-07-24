@@ -19,7 +19,7 @@ public class AuthentificationService(
     private const string RefreshTokenProvider = "AuthenticationTemplate";
     private const string RefreshTokenName = "RefreshToken";
     private const string RefreshTokenExpiryTimeName = "RefreshTokenExpiryTime";
-    
+
     public async Task<IResult> Register(RegisterRequest dto)
     {
         var user = dto.Map();
@@ -76,8 +76,10 @@ public class AuthentificationService(
 
         var tokens = jwtService.GenerateKeyPair(user);
         var refreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
-        await userManager.SetAuthenticationTokenAsync(user, RefreshTokenProvider, RefreshTokenName, tokens.RefreshToken);
-        await userManager.SetAuthenticationTokenAsync(user, RefreshTokenProvider, RefreshTokenExpiryTimeName, refreshTokenExpiryTime.ToString("o"));
+        await userManager.SetAuthenticationTokenAsync(user, RefreshTokenProvider, RefreshTokenName,
+            tokens.RefreshToken);
+        await userManager.SetAuthenticationTokenAsync(user, RefreshTokenProvider, RefreshTokenExpiryTimeName,
+            refreshTokenExpiryTime.ToString("o"));
 
         return Results.Ok(tokens);
     }
@@ -91,8 +93,9 @@ public class AuthentificationService(
                 t.Value == request.RefreshToken));
 
         if (user is null) return Results.Unauthorized();
-        
-        var expiryTimeValue = await userManager.GetAuthenticationTokenAsync(user, RefreshTokenProvider, RefreshTokenExpiryTimeName);
+
+        var expiryTimeValue =
+            await userManager.GetAuthenticationTokenAsync(user, RefreshTokenProvider, RefreshTokenExpiryTimeName);
 
         if (string.IsNullOrEmpty(expiryTimeValue) ||
             DateTime.Parse(expiryTimeValue).ToUniversalTime() <= DateTime.UtcNow)
@@ -103,8 +106,9 @@ public class AuthentificationService(
         }
 
         var accessToken = jwtService.GenerateToken(user);
-        var storedRefreshToken = await userManager.GetAuthenticationTokenAsync(user, RefreshTokenProvider, RefreshTokenName);
-        
+        var storedRefreshToken =
+            await userManager.GetAuthenticationTokenAsync(user, RefreshTokenProvider, RefreshTokenName);
+
         return Results.Ok(new AuthResponse(accessToken, storedRefreshToken!));
     }
 

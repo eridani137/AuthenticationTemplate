@@ -1,9 +1,13 @@
+using System.Net.Http.Headers;
 using AuthenticationTemplate.AdminPanel.Components;
 using AuthenticationTemplate.AdminPanel.Services;
 using AuthenticationTemplate.Core.Configuration;
+using AuthenticationTemplate.Shared.Authentication;
+using AuthenticationTemplate.Shared.Configs;
 using Blazored.LocalStorage;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.Extensions.Options;
 using MudBlazor;
 using MudBlazor.Services;
 
@@ -21,8 +25,26 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
     options.KnownProxies.Clear();
 });
 
+builder.Services.Configure<ApiConfig>(builder.Configuration.GetSection(nameof(ApiConfig)));
+
+builder.Services.AddScoped<AuthenticationMessageHandler>();
+
+builder.Services.AddScoped<AuthService>();
+
+builder.Services.AddHttpClient<AuthService>((sp, client) =>
+{
+    var config = sp.GetRequiredService<IOptions<ApiConfig>>().Value;
+
+    client.BaseAddress = new Uri(config.BaseEndpoint);
+    client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+})
+.AddHttpMessageHandler<AuthenticationMessageHandler>();
+
 builder.Services.AddRazorComponents()
-    .AddInteractiveServerComponents();
+    .AddInteractiveServerComponents(options =>
+    {
+        options.DetailedErrors = true; // TODO
+    });
 
 builder.Services.AddMudServices(c =>
 {

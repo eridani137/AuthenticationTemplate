@@ -1,47 +1,46 @@
 @page "/login"
+@using AuthenticationTemplate.AdminPanel.Services
 @using AuthenticationTemplate.Shared.DTOs
 @using AuthenticationTemplate.Shared.Validations.Validators.User
+@inject AuthService AuthService
 @attribute [AllowAnonymous]
 
 <MudContainer MaxWidth="MaxWidth.Small" Class="d-flex justify-center align-center" Style="min-height: 80vh;">
-    <MudPaper Elevation="12" Class="pa-4" Style="width: 500px;">
-        <MudText Typo="Typo.h4" Align="Align.Center" Class="mb-4">Авторизация</MudText>
+    <MudPaper Elevation="12" Class="pa-8" Style="width: 500px;">
+        <MudText Typo="Typo.h5" Align="Align.Center" Class="mt-4 mb-4">Авторизация</MudText>
 
-        <MudForm @ref="_form" Model="@_loginDto" Validation="@(_validator.ValidateValue)" ValidationDelay="0">
+        <MudForm @ref="_form" Model="@_loginRequest" Validation="@(_validator.ValidateValue)" ValidationDelay="0">
             <MudTextField
-                @bind-Value="_loginDto.Username"
+                @bind-Value="_loginRequest.Username"
                 Label="Логин"
                 Variant="Variant.Outlined"
                 Margin="Margin.Normal"
-                For="@(() => _loginDto.Username)"
+                For="@(() => _loginRequest.Username)"
                 Immediate="true"
                 FullWidth="true"/>
 
             <MudTextField
-                @bind-Value="_loginDto.Password"
+                @bind-Value="_loginRequest.Password"
                 Label="Пароль"
                 Variant="Variant.Outlined"
                 Margin="Margin.Normal"
                 InputType="InputType.Password"
-                For="@(() => _loginDto.Password)"
+                For="@(() => _loginRequest.Password)"
                 Immediate="true"
                 FullWidth="true"/>
 
-            @* @if (_needTwoFactor) *@
-            @* { *@
-            @*     <MudForm @ref="_twoFactorForm" Model="@_twoFactorVerifyDto" *@
-            @*              Validation="@(_twoFactorValidator.ValidateValue)" ValidationDelay="0"> *@
-            @*         <MudTextField *@
-            @*             @bind-Value="_twoFactorVerifyDto.Code" *@
-            @*             Label="Код аутентификации" *@
-            @*             Variant="Variant.Outlined" *@
-            @*             Margin="Margin.Normal" *@
-            @*             For="@(() => _twoFactorVerifyDto.Code)" *@
-            @*             Immediate="true" *@
-            @*             FullWidth="true" *@
-            @*             MaxLength="6"/> *@
-            @*     </MudForm> *@
-            @* } *@
+            @if (_twoFactorRequired)
+            {
+                <MudTextField
+                    @bind-Value="_loginRequest.TwoFactorCode"
+                    Label="Код аутентификации"
+                    Variant="Variant.Outlined"
+                    Margin="Margin.Normal"
+                    For="@(() => _loginRequest.TwoFactorCode)"
+                    Immediate="true"
+                    FullWidth="true"
+                    MaxLength="6"/>
+            }
 
             @if (!string.IsNullOrEmpty(_errorMessage))
             {
@@ -62,9 +61,10 @@
 
 @code {
     
-    private readonly LoginRequest _loginDto = new("", "", "");
+    private readonly LoginRequest _loginRequest = new("", "", null);
     private string? _errorMessage;
     private MudForm _form = null!;
+    private bool _twoFactorRequired;
 
     private readonly LoginValidator _validator = new();
 
@@ -74,37 +74,54 @@
 
         await _form.Validate();
 
-        // if (_form.IsValid)
-        // {
-        //     if (_needTwoFactor)
-        //     {
-        //         await _twoFactorForm!.Validate();
-        //
-        //         if (!_twoFactorForm.IsValid) return;
-        //
-        //         _loginDto.TwoFactorCode = _twoFactorVerifyDto.Code;
-        //     }
-        //
-        //     var response = await UserService.Login(_loginDto);
-        //
-        //     switch (response.Code)
-        //     {
-        //         case HttpStatusCode.OK when !string.IsNullOrEmpty(response.Content):
-        //             await AuthStateProvider.MarkUserAsAuthenticated(response.Content);
-        //             NavigationManager.NavigateTo("/", forceLoad: true);
-        //             break;
-        //         case HttpStatusCode.PreconditionRequired:
-        //             _needTwoFactor = true;
-        //             break;
-        //         case HttpStatusCode.BadRequest:
-        //             _errorMessage = response.Content ?? "Ошибка аутентификации";
-        //             break;
-        //         case HttpStatusCode.Unauthorized:
-        //         default:
-        //             _errorMessage = "Ошибка аутентификации";
-        //             break;
-        //     }
-        // }
+        if (_form.IsValid)
+        {
+            var result = await AuthService.Login(_loginRequest);
+
+            if (result.AuthResponse is not null && !result.Require2FaCode)
+            {
+                
+            }
+            else if (result.AuthResponse is null && result.Require2FaCode)
+            {
+                _twoFactorRequired = true;
+                _errorMessage = result.Message;
+                await InvokeAsync(StateHasChanged);
+            }
+            else
+            {
+                _errorMessage = result.Message;
+            }
+
+            // if (_needTwoFactor)
+            // {
+            //     await _twoFactorForm!.Validate();
+            //
+            //     if (!_twoFactorForm.IsValid) return;
+            //
+            //     _loginDto.TwoFactorCode = _twoFactorVerifyDto.Code;
+            // }
+            //
+            // var response = await UserService.Login(_loginDto);
+            //
+            // switch (response.Code)
+            // {
+            //     case HttpStatusCode.OK when !string.IsNullOrEmpty(response.Content):
+            //         await AuthStateProvider.MarkUserAsAuthenticated(response.Content);
+            //         NavigationManager.NavigateTo("/", forceLoad: true);
+            //         break;
+            //     case HttpStatusCode.PreconditionRequired:
+            //         _needTwoFactor = true;
+            //         break;
+            //     case HttpStatusCode.BadRequest:
+            //         _errorMessage = response.Content ?? "Ошибка аутентификации";
+            //         break;
+            //     case HttpStatusCode.Unauthorized:
+            //     default:
+            //         _errorMessage = "Ошибка аутентификации";
+            //         break;
+            // }
+        }
     }
     
 }

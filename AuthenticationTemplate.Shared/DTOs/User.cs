@@ -1,3 +1,4 @@
+using System.Net;
 using MongoDB.Bson;
 
 namespace AuthenticationTemplate.Shared.DTOs;
@@ -12,6 +13,8 @@ public record LoginRequest(string Username, string Password, string? TwoFactorCo
 }
 
 public record AuthResponse(string AccessToken, string RefreshToken);
+
+public record ClientAuthResponse(AuthResponse? AuthResponse, bool Require2FaCode, HttpStatusCode StatusCode, string? Message);
 
 public record UserResponse(ObjectId Id, string Username);
 
