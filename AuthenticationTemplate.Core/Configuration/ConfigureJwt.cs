@@ -47,7 +47,12 @@ public static class ConfigureJwt
                         {
                             context.Fail("Токен недействителен");
                         }
-                    }
+                    },
+                    // OnChallenge = context =>
+                    // {
+                    //     context.HandleResponse();
+                    //     return Task.CompletedTask;
+                    // }
                 };
             });
 
