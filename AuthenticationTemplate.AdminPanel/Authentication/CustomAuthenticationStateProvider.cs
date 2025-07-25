@@ -3,6 +3,7 @@ using System.Security.Claims;
 using AuthenticationTemplate.AdminPanel.Services;
 using AuthenticationTemplate.Shared.DTOs;
 using Blazored.LocalStorage;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.JSInterop;
 
@@ -10,6 +11,7 @@ namespace AuthenticationTemplate.AdminPanel.Authentication;
 
 public class CustomAuthenticationStateProvider(
     ILocalStorageService localStorage,
+    NavigationManager navigation,
     HttpClient client,
     IJSRuntime jsRuntime) : AuthenticationStateProvider
 {
@@ -150,6 +152,7 @@ public class CustomAuthenticationStateProvider(
             if (result is not null)
             {
                 await MarkUserAsAuthenticated(result);
+                navigation.NavigateTo(navigation.Uri, true);
             }
             else
             {
@@ -165,7 +168,7 @@ public class CustomAuthenticationStateProvider(
     private static ClaimsIdentity ParseClaimsFromJwt(string jwt)
     {
         var handler = new JwtSecurityTokenHandler();
-        var token   = handler.ReadJwtToken(jwt);
+        var token = handler.ReadJwtToken(jwt);
 
         return new ClaimsIdentity(
             token.Claims,
