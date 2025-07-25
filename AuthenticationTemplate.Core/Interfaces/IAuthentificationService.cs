@@ -16,4 +16,5 @@ public interface IAuthentificationService
     Task<IResult> Enable2Fa(AuthenticatorCodeRequest request, ClaimsPrincipal userPrincipal);
     Task<IResult> Disable2Fa(AuthenticatorCodeRequest request, ClaimsPrincipal userPrincipal);
     Task<IResult> GenerateRecoveryCodes(ClaimsPrincipal userPrincipal);
+    Task<IResult> ChangePassword(ChangePasswordRequest request, ClaimsPrincipal userPrincipal);
 }

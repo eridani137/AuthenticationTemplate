@@ -1,9 +1,8 @@
 @page "/login"
-@using AuthenticationTemplate.AdminPanel.Authentication
-@using AuthenticationTemplate.AdminPanel.Services
+@using AuthenticationTemplate.Shared.Authentication
 @using AuthenticationTemplate.Shared.DTOs
 @using AuthenticationTemplate.Shared.Validations.Validators.User
-@inject AuthService AuthService
+@inject AuthenticationClientService Auth
 @inject CustomAuthenticationStateProvider AuthStateProvider
 @inject NavigationManager Navigation
 @attribute [AllowAnonymous]
@@ -79,7 +78,7 @@
 
         if (_form.IsValid)
         {
-            var result = await AuthService.Login(_loginRequest);
+            var result = await Auth.Login(_loginRequest);
 
             if (result.AuthResponse is not null && !result.Require2FaCode)
             {
@@ -89,12 +88,12 @@
             else if (result.AuthResponse is null && result.Require2FaCode)
             {
                 _twoFactorRequired = true;
-                _errorMessage = result.Message;
+                _errorMessage = result.ServerResponse.Message ?? "Ошибка авторизации";
                 await InvokeAsync(StateHasChanged);
             }
             else
             {
-                _errorMessage = result.Message;
+                _errorMessage = result.ServerResponse.Message ?? "Ошибка авторизации";
             }
         }
     }

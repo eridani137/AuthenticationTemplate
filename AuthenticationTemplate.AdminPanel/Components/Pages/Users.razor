@@ -14,12 +14,13 @@
             <MudSpacer/>
             <MudStack Row="true" Spacing="1">
                 <MudTextField @bind-Value="_searchUserId"
-                              Label="ID пользователя"
+                              Label="Id пользователя"
                               Adornment="Adornment.End"
                               AdornmentIcon="@Icons.Material.Filled.Search"
+                              AdornmentColor="Color.Secondary"
                               OnAdornmentClick="SearchUserById"
-                              Variant="Variant.Filled"
-                              Margin="Margin.Normal"
+                              Variant="Variant.Outlined"
+                              Margin="Margin.Dense"
                               Placeholder="Фильтр по пользователю"
                               Error="@(!string.IsNullOrEmpty(_searchError))"
                               ErrorText="@_searchError"
@@ -47,7 +48,7 @@
                      Hover="true"
                      Dense="true">
             <Columns>
-                <HierarchyColumn/>
+                <PropertyColumn Property="x => x.Id.ToString()" Title="Id"/>
                 <PropertyColumn Property="x => x.Username" Title="Логин"/>
                 <TemplateColumn Title="Роли">
                     <CellTemplate Context="cellContext">
@@ -82,16 +83,6 @@
                     </CellTemplate>
                 </TemplateColumn>
             </Columns>
-            <ChildRowContent Context="rowContext">
-                <MudStack>
-                    <MudTooltip Placement="Placement.Left" Text="Id пользователя">
-                        <MudStack Row="true">
-                            <MudIcon Icon="@Icons.Material.Filled.AssignmentInd" Class="mr-2"/>
-                            <MudText Typo="Typo.body1">@rowContext.Item.Id</MudText>
-                        </MudStack>
-                    </MudTooltip>
-                </MudStack>
-            </ChildRowContent>
         </MudDataGrid>
     </MudPaper>
 </MudContainer>

@@ -116,6 +116,20 @@ public class AuthentificationService(
 
         return Results.Ok(new AuthResponse(accessToken, storedRefreshToken!));
     }
+    
+    public async Task<IResult> ChangePassword(ChangePasswordRequest request, ClaimsPrincipal userPrincipal)
+    {
+        var user = await userManager.GetUserAsync(userPrincipal);
+        if (user is null) return Results.Unauthorized();
+        
+        var result = await userManager.ChangePasswordAsync(user, request.CurrentPassword, request.NewPassword);
+        if (!result.Succeeded)
+        {
+            return Results.ValidationProblem(result.Errors.GetIdentityErrors());
+        }
+        
+        return Results.Ok();
+    }
 
     public async Task<IResult> Logout(ClaimsPrincipal userPrincipal)
     {

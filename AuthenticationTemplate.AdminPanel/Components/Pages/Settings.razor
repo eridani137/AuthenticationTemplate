@@ -1,0 +1,92 @@
+@page "/settings"
+@using System.Net
+@using AuthenticationTemplate.Shared.Authentication
+@using AuthenticationTemplate.Shared.DTOs
+@using AuthenticationTemplate.Shared.Validations.Validators.User
+@attribute [Authorize]
+@inject AuthenticationClientService Auth
+@inject ISnackbar Snackbar
+@rendermode @(new InteractiveServerRenderMode(false))
+
+<MudContainer>
+    <MudGrid Justify="Justify.Center" Class="mt-6">
+        <MudItem xs="12" sm="8" md="6">
+            <MudCard Elevation="12" Class="mt-4">
+                <MudCardContent>
+                    <MudForm @ref="_form" Model="@_changePasswordRequest" Validation="@(_validator.ValidateValue)">
+                        <MudTextField T="string"
+                                     Label="Текущий пароль"
+                                     FullWidth="true"
+                                     @bind-Value="_changePasswordRequest.CurrentPassword"
+                                     InputType="InputType.Password"
+                                     For="@(() => _changePasswordRequest.CurrentPassword)"
+                                     Immediate="true"
+                                     Margin="Margin.Normal"/>
+
+                        <MudTextField T="string"
+                                     Label="Новый пароль"
+                                     FullWidth="true"
+                                     @bind-Value="_changePasswordRequest.NewPassword"
+                                     InputType="InputType.Password"
+                                     For="@(() => _changePasswordRequest.NewPassword)"
+                                     Immediate="true"
+                                     Margin="Margin.Normal"/>
+
+                        <MudTextField T="string"
+                                     Label="Подтверждение пароля"
+                                     FullWidth="true"
+                                     @bind-Value="_changePasswordRequest.ConfirmNewPassword"
+                                     InputType="InputType.Password"
+                                     For="@(() => _changePasswordRequest.ConfirmNewPassword)"
+                                     Immediate="true"
+                                     Margin="Margin.Normal"/>
+
+                        @if (!string.IsNullOrEmpty(_errorMessage))
+                        {
+                            <MudAlert Severity="Severity.Error" Class="mt-3 mb-3">@_errorMessage</MudAlert>
+                        }
+
+                        <MudButton Variant="Variant.Filled"
+                                  Color="Color.Primary"
+                                  FullWidth="true"
+                                  Class="mt-3"
+                                  OnClick="@ChangePassword">
+                            Изменить пароль
+                        </MudButton>
+                    </MudForm>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+    </MudGrid>
+</MudContainer>
+
+@code {
+    private ChangePasswordRequest _changePasswordRequest = new("", "", "");
+    private MudForm _form = null!;
+    private string? _errorMessage;
+    private ChangePasswordValidator _validator = new();
+    
+    private async Task ChangePassword()
+    {
+        _errorMessage = null;
+        
+        await _form.Validate();
+        
+        if (_form.IsValid)
+        {
+            var result = await Auth.ChangePassword(_changePasswordRequest);
+
+            if (result.StatusCode == HttpStatusCode.OK)
+            {
+                _changePasswordRequest = new ChangePasswordRequest("", "", "");
+                Snackbar.Add("Пароль успешно изменен", Severity.Success);
+                _validator = new ChangePasswordValidator();
+                await _form.ResetAsync();
+            }
+            else
+            {
+                _errorMessage = result.Message ?? "Ошибка смены пароля";
+            }
+        }
+    }
+}

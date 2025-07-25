@@ -34,8 +34,18 @@ public class Authentification : ICarterModule
                 (RefreshTokenRequest request, IAuthentificationService service) => service.RefreshToken(request))
             .AddEndpointFilter<ValidationFilter<RefreshTokenRequest>>()
             .Produces<AuthResponse>()
+            .Produces(StatusCodes.Status400BadRequest)
             .Produces(StatusCodes.Status401Unauthorized)
             .WithName("Обновление токена доступа");
+
+        group.MapPost("/change-password",
+                (ChangePasswordRequest request, ClaimsPrincipal user, IAuthentificationService service) => service.ChangePassword(request, user))
+            .AddEndpointFilter<ValidationFilter<ChangePasswordRequest>>()
+            .RequireAuthorization()
+            .Produces(StatusCodes.Status200OK)
+            .Produces(StatusCodes.Status400BadRequest)
+            .Produces(StatusCodes.Status401Unauthorized)
+            .WithName("Смена пароля");
 
         group.MapPost("/logout", (ClaimsPrincipal user, IAuthentificationService service) => service.Logout(user))
             .RequireAuthorization()

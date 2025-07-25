@@ -1,4 +1,4 @@
-﻿@using AuthenticationTemplate.AdminPanel.Authentication
+﻿@using AuthenticationTemplate.Shared.Authentication
 @inherits LayoutComponentBase
 @inject ILocalStorageService LocalStorage
 @inject CustomAuthenticationStateProvider AuthStateProvider
@@ -101,7 +101,7 @@
             {
                 _isDarkMode = await _themeProvider.GetSystemDarkModeAsync();
             }
-
+            
             await AuthStateProvider.RefreshStateAsync();
         
             await InvokeAsync(StateHasChanged);
@@ -111,7 +111,7 @@
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
-
+        
         _theme = new MudTheme
         {
             PaletteLight = _lightPalette,

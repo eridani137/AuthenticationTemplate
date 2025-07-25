@@ -1,10 +1,11 @@
 using System.Net.Http.Headers;
-using AuthenticationTemplate.AdminPanel.Authentication;
 using AuthenticationTemplate.AdminPanel.Components;
 using AuthenticationTemplate.AdminPanel.Services;
 using AuthenticationTemplate.Core.Configuration;
 using AuthenticationTemplate.Infrastructure;
+using AuthenticationTemplate.Shared.Authentication;
 using AuthenticationTemplate.Shared.Configs;
+using AuthenticationTemplate.Shared.Interfaces;
 using Blazored.LocalStorage;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.HttpOverrides;
@@ -32,10 +33,7 @@ builder.Services.AddMongoDb(builder.Configuration);
 builder.Services.AddIdentity(builder.Configuration);
 
 builder.Services.AddRazorComponents()
-    .AddInteractiveServerComponents(options =>
-    {
-        options.DetailedErrors = true; // TODO
-    });
+    .AddInteractiveServerComponents();
 
 builder.Services.AddMudServices(c =>
 {
@@ -58,6 +56,8 @@ builder.Services.AddSignalR(options =>
 
 builder.Services.AddBlazoredLocalStorage();
 
+builder.Services.AddScoped<ITokenStorage, LocalTokenStorage>();
+
 builder.Services.AddScoped<UserService>();
 
 builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthenticationStateProvider>();
@@ -65,9 +65,9 @@ builder.Services.AddScoped<CustomAuthenticationStateProvider>();
 
 builder.Services.AddScoped<AuthenticationMessageHandler>();
 
-builder.Services.AddScoped<AuthService>();
+builder.Services.AddScoped<AuthenticationClientService>();
 
-builder.Services.AddHttpClient<AuthService>((sp, client) =>
+builder.Services.AddHttpClient<AuthenticationClientService>((sp, client) =>
     {
         var config = sp.GetRequiredService<IOptions<ApiConfig>>().Value;
 

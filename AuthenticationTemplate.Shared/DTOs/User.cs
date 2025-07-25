@@ -12,9 +12,18 @@ public record LoginRequest(string Username, string Password, string? TwoFactorCo
     public string? TwoFactorCode { get; set; } = TwoFactorCode;
 }
 
+public record ChangePasswordRequest(string CurrentPassword, string NewPassword, string ConfirmNewPassword)
+{
+    public string CurrentPassword { get; set; } = CurrentPassword;
+    public string NewPassword { get; set; } = NewPassword;
+    public string ConfirmNewPassword { get; set; } = ConfirmNewPassword;
+}
+
 public record AuthResponse(string AccessToken, string RefreshToken);
 
-public record ClientAuthResponse(AuthResponse? AuthResponse, bool Require2FaCode, HttpStatusCode StatusCode, string? Message);
+public record ServerResponse(HttpStatusCode StatusCode, string? Message);
+
+public record ClientAuthResponse(AuthResponse? AuthResponse, bool Require2FaCode, ServerResponse ServerResponse);
 
 public record UserDto(ObjectId Id, string Username, IList<string> Roles, bool IsDeactivated);
 
