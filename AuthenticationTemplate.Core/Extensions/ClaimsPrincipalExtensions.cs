@@ -1,6 +1,6 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using AuthenticationTemplate.Core.Entities;
+using AuthenticationTemplate.Shared.Entities;
 using Microsoft.AspNetCore.Identity;
 
 namespace AuthenticationTemplate.Core.Extensions;

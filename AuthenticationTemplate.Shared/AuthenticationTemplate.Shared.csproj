@@ -7,6 +7,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <PackageReference Include="AspNetCore.Identity.Mongo" Version="10.1.0" />
       <PackageReference Include="Blazored.LocalStorage" Version="4.5.0" />
       <PackageReference Include="FluentValidation" Version="12.0.0" />
       <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="2.3.0" />
@@ -20,10 +21,6 @@
       <Reference Include="Microsoft.AspNetCore.Components.Authorization">
         <HintPath>C:\Program Files\dotnet\shared\Microsoft.AspNetCore.App\9.0.7\Microsoft.AspNetCore.Components.Authorization.dll</HintPath>
       </Reference>
-    </ItemGroup>
-
-    <ItemGroup>
-      <Folder Include="Extensions\" />
     </ItemGroup>
 
 </Project>

@@ -1,6 +1,6 @@
 using System.Text;
-using AuthenticationTemplate.Core.Entities;
 using AuthenticationTemplate.Shared.Configs;
+using AuthenticationTemplate.Shared.Entities;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Identity;

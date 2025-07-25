@@ -16,7 +16,7 @@ public record AuthResponse(string AccessToken, string RefreshToken);
 
 public record ClientAuthResponse(AuthResponse? AuthResponse, bool Require2FaCode, HttpStatusCode StatusCode, string? Message);
 
-public record UserResponse(ObjectId Id, string Username);
+public record UserDto(ObjectId Id, string Username, IList<string> Roles, bool IsDeactivated);
 
 public record RefreshTokenRequest(string RefreshToken);
 

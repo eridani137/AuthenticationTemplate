@@ -55,7 +55,7 @@
                        ClipMode="DrawerClipMode.Always">
                 <MudNavMenu Class="d-flex flex-column mt-4" Style="height: 100%;">
 
-                    <AuthorizeView Context="usersContext" Roles="Admin">
+                    <AuthorizeView Context="adminContext" Roles="Admin">
                         <MudNavLink Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.People" Href="users">
                             Пользователи
                         </MudNavLink>

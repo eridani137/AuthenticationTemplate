@@ -3,6 +3,7 @@ using AuthenticationTemplate.AdminPanel.Authentication;
 using AuthenticationTemplate.AdminPanel.Components;
 using AuthenticationTemplate.AdminPanel.Services;
 using AuthenticationTemplate.Core.Configuration;
+using AuthenticationTemplate.Infrastructure;
 using AuthenticationTemplate.Shared.Configs;
 using Blazored.LocalStorage;
 using Microsoft.AspNetCore.Components.Authorization;
@@ -26,6 +27,9 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
 });
 
 builder.Services.Configure<ApiConfig>(builder.Configuration.GetSection(nameof(ApiConfig)));
+
+builder.Services.AddMongoDb(builder.Configuration);
+builder.Services.AddIdentity(builder.Configuration);
 
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents(options =>
@@ -53,6 +57,8 @@ builder.Services.AddSignalR(options =>
 });
 
 builder.Services.AddBlazoredLocalStorage();
+
+builder.Services.AddScoped<UserService>();
 
 builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthenticationStateProvider>();
 builder.Services.AddScoped<CustomAuthenticationStateProvider>();

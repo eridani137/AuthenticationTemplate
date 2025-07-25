@@ -1,9 +1,10 @@
 using System.Security.Claims;
-using AuthenticationTemplate.Core.Entities;
+using AspNetCore.Identity.Mongo.Model;
 using AuthenticationTemplate.Core.Extensions;
 using AuthenticationTemplate.Core.Interfaces;
-using AuthenticationTemplate.Core.Mappings;
 using AuthenticationTemplate.Shared.DTOs;
+using AuthenticationTemplate.Shared.Entities;
+using AuthenticationTemplate.Shared.Mappings;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
@@ -74,7 +75,9 @@ public class AuthentificationService(
 
         await userManager.ResetAccessFailedCountAsync(user);
 
-        var tokens = jwtService.GenerateKeyPair(user);
+        var userRoles = await userManager.GetRolesAsync(user);
+
+        var tokens = jwtService.GenerateKeyPair(user, userRoles);
         var refreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
         await userManager.SetAuthenticationTokenAsync(user, RefreshTokenProvider, RefreshTokenName,
             tokens.RefreshToken);
@@ -104,8 +107,10 @@ public class AuthentificationService(
             await userManager.RemoveAuthenticationTokenAsync(user, RefreshTokenProvider, RefreshTokenExpiryTimeName);
             return Results.Unauthorized();
         }
+        
+        var userRoles = await userManager.GetRolesAsync(user);
 
-        var accessToken = jwtService.GenerateToken(user);
+        var accessToken = jwtService.GenerateToken(user, userRoles);
         var storedRefreshToken =
             await userManager.GetAuthenticationTokenAsync(user, RefreshTokenProvider, RefreshTokenName);
 

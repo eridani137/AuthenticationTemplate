@@ -2,10 +2,10 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
-using AuthenticationTemplate.Core.Entities;
 using AuthenticationTemplate.Core.Interfaces;
 using AuthenticationTemplate.Shared.Configs;
 using AuthenticationTemplate.Shared.DTOs;
+using AuthenticationTemplate.Shared.Entities;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 
@@ -13,15 +13,15 @@ namespace AuthenticationTemplate.Core.Services;
 
 public class JwtService(IOptions<JwtConfig> config) : IJwtService
 {
-    public AuthResponse GenerateKeyPair(ApplicationUser user)
+    public AuthResponse GenerateKeyPair(ApplicationUser user, IEnumerable<string> roleNames)
     {
-        var accessToken = GenerateToken(user);
+        var accessToken = GenerateToken(user, roleNames);
         var refreshToken = GenerateRefreshToken(user);
 
         return new AuthResponse(accessToken, refreshToken);
     }
 
-    public string GenerateToken(ApplicationUser user)
+    public string GenerateToken(ApplicationUser user, IEnumerable<string> roleNames)
     {
         var tokenHandler = new JwtSecurityTokenHandler();
         var secret = Encoding.ASCII.GetBytes(config.Value.Secret);
@@ -34,7 +34,7 @@ public class JwtService(IOptions<JwtConfig> config) : IJwtService
             new("AspNet.Identity.SecurityStamp", user.SecurityStamp!),
         };
 
-        claims.AddRange(user.Roles.Select(role => new Claim(ClaimTypes.Role, role)));
+        claims.AddRange(roleNames.Select(roleName => new Claim(ClaimTypes.Role, roleName)));
 
         var tokenDescriptor = new SecurityTokenDescriptor()
         {

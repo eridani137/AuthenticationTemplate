@@ -165,9 +165,14 @@ public class CustomAuthenticationStateProvider(
     private static ClaimsIdentity ParseClaimsFromJwt(string jwt)
     {
         var handler = new JwtSecurityTokenHandler();
-        var token = handler.ReadJwtToken(jwt);
-        var claims = token.Claims;
-        return new ClaimsIdentity(claims, "jwt");
+        var token   = handler.ReadJwtToken(jwt);
+
+        return new ClaimsIdentity(
+            token.Claims,
+            authenticationType: "jwt",
+            nameType: JwtRegisteredClaimNames.Nickname,
+            roleType: "role"
+        );
     }
 
     private static bool IsTokenExpired(string token)

@@ -16,6 +16,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\AuthenticationTemplate.Core\AuthenticationTemplate.Core.csproj" />
+      <ProjectReference Include="..\AuthenticationTemplate.Infrastructure\AuthenticationTemplate.Infrastructure.csproj" />
     </ItemGroup>
 
     <ItemGroup>

@@ -1,6 +1,6 @@
 using AspNetCore.Identity.Mongo.Model;
-using AuthenticationTemplate.Core.Entities;
 using AuthenticationTemplate.Core.Interfaces;
+using AuthenticationTemplate.Shared.Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;

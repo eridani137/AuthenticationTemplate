@@ -1,5 +1,5 @@
 using AspNetCore.Identity.Mongo;
-using AuthenticationTemplate.Core.Entities;
+using AuthenticationTemplate.Shared.Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -9,12 +9,17 @@ namespace AuthenticationTemplate.Infrastructure;
 
 public static class ServiceExtensions
 {
-    public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
+    public static IServiceCollection AddMongoDb(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddSingleton<IMongoClient>(_ => new MongoClient(configuration.GetConnectionString("MongoDb")));
         
-        services.AddScoped<MongoContext>();
+        // services.AddScoped<MongoContext>(); // TODO
 
+        return services;
+    }
+
+    public static IServiceCollection AddIdentity(this IServiceCollection services, IConfiguration configuration)
+    {
         services.AddIdentityMongoDbProvider<ApplicationUser>(identity =>
         {
             identity.Password.RequiredLength = 8;

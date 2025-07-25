@@ -1,0 +1,255 @@
+@page "/users"
+@using AuthenticationTemplate.AdminPanel.Services
+@using AuthenticationTemplate.Shared.DTOs
+@using MongoDB.Bson
+@attribute [Authorize(Roles = "Admin")]
+@inject ILogger<Users> Logger
+@inject ISnackbar Snackbar
+@inject UserService UserService
+
+<MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="mt-4">
+    <MudPaper Class="pa-4" Elevation="12" Style="height: 100%; display: flex; flex-direction: column;">
+        <MudToolBar>
+            <MudText Typo="Typo.h6">Список пользователей</MudText>
+            <MudSpacer/>
+            <MudStack Row="true" Spacing="1">
+                <MudTextField @bind-Value="_searchUserId"
+                              Label="ID пользователя"
+                              Adornment="Adornment.End"
+                              AdornmentIcon="@Icons.Material.Filled.Search"
+                              OnAdornmentClick="SearchUserById"
+                              Variant="Variant.Outlined"
+                              Margin="Margin.Normal"
+                              Placeholder="Фильтр по пользователю"
+                              Error="@(!string.IsNullOrEmpty(_searchError))"
+                              ErrorText="@_searchError"
+                              Style="width: 600px"
+                              Immediate="true"
+                              OnKeyDown="@(HandleKeyDown)" />
+                @if (_isFiltered)
+                {
+                    <MudButton Color="Color.Secondary"
+                               Variant="Variant.Outlined"
+                               OnClick="@(ClearSearch)"
+                               Style="height: 56px; align-self: flex-start; margin-top: 16px;">Сбросить
+                    </MudButton>
+                }
+            </MudStack>
+        </MudToolBar>
+        <MudDataGrid T="UserDto"
+                     Items="@_users"
+                     Loading="@_isLoading"
+                     LoadingProgressColor="Color.Primary"
+                     SortMode="SortMode.Multiple"
+                     Filterable="true"
+                     Hideable="true"
+                     Bordered="true"
+                     Hover="true"
+                     Dense="true">
+            <Columns>
+                <HierarchyColumn/>
+                <PropertyColumn Property="x => x.Username" Title="Логин"/>
+                <TemplateColumn Title="Роли">
+                    <CellTemplate Context="cellContext">
+                        @foreach (var role in cellContext.Item.Roles)
+                        {
+                            <MudChip Size="Size.Small" Color="@GetRoleColor(role)">@role</MudChip>
+                        }
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn Title="Статус">
+                    <CellTemplate Context="cellContext">
+                        <MudChip Color="@(cellContext.Item.IsDeactivated ? Color.Error : Color.Success)"
+                                 Size="Size.Small">
+                            @(cellContext.Item.IsDeactivated ? "Деактивирован" : "Активен")
+                        </MudChip>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn Title="Действия">
+                    <CellTemplate Context="cellContext">
+                        <MudStack Row="true">
+                            <MudIconButton Variant="Variant.Outlined"
+                                           OnClick="@(() => OpenEditDialog(cellContext.Item))"
+                                           Icon="@Icons.Material.Filled.Edit"
+                                           Color="Color.Primary"
+                                           Size="Size.Small"/>
+                            <MudIconButton Variant="Variant.Outlined"
+                                           OnClick="@(() => DeleteUser(cellContext.Item))"
+                                           Icon="@Icons.Material.Filled.Delete"
+                                           Color="Color.Error"
+                                           Size="Size.Small"/>
+                        </MudStack>
+                    </CellTemplate>
+                </TemplateColumn>
+            </Columns>
+            <ChildRowContent Context="rowContext">
+                <MudStack>
+                    <MudTooltip Placement="Placement.Left" Text="Id пользователя">
+                        <MudStack Row="true">
+                            <MudIcon Icon="@Icons.Material.Filled.AssignmentInd" Class="mr-2"/>
+                            <MudText Typo="Typo.body1">@rowContext.Item.Id</MudText>
+                        </MudStack>
+                    </MudTooltip>
+                </MudStack>
+            </ChildRowContent>
+        </MudDataGrid>
+    </MudPaper>
+</MudContainer>
+
+@code {
+    private bool _isLoading = true;
+    private List<UserDto> _users = [];
+    private string _searchUserId = string.Empty;
+    private string _searchError = string.Empty;
+    private bool _isFiltered;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadUsers();
+    }
+
+    private async Task LoadUsers()
+    {
+        try
+        {
+            _isLoading = true;
+            _users = await UserService.GetUsers();
+        }
+        catch (Exception e)
+        {
+            Logger.LogError(e, e.Message);
+            Snackbar.Add("Ошибка при загрузке пользователей", Severity.Error);
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private async Task OpenCreateDialog()
+    {
+        // await DialogService.ShowAsync<CreateUserDialog>();
+    }
+
+    private async Task DeleteUser(UserDto user)
+    {
+        var parameters = new DialogParameters
+        {
+            ["ContentText"] = $"Вы действительно хотите удалить пользователя {user.Username}?",
+            ["ButtonText"] = "Удалить"
+        };
+
+        // var dialog = await DialogService.ShowAsync<ConfirmationDialog>(null, parameters);
+        // var result = await dialog.Result;
+        //
+        // if (result is { Canceled: false })
+        // {
+        //     try
+        //     {
+        //         _isLoading = true;
+        //         var deleteResult = await AdminService.DeleteUser(user.Id);
+        //
+        //         if (deleteResult.Code == HttpStatusCode.OK)
+        //         {
+        //             Snackbar.Add($"Пользователь {user.Username} успешно удален", Severity.Success);
+        //         }
+        //         else
+        //         {
+        //             var error = !string.IsNullOrEmpty(deleteResult.Content) ? deleteResult.Content : "Ошибка при удалении пользователя";
+        //             Snackbar.Add(error, Severity.Error);
+        //         }
+        //     }
+        //     catch (Exception e)
+        //     {
+        //         Logger.LogError(e, "Ошибка при удалении пользователя {UserId}", user.Id);
+        //         Snackbar.Add(e.Message, Severity.Error);
+        //     }
+        //     finally
+        //     {
+        //         _isLoading = false;
+        //     }
+        // }
+    }
+
+    private async Task OpenEditDialog(UserDto user)
+    {
+        // var parameters = new DialogParameters
+        // {
+        //     ["User"] = user
+        // };
+        //
+        // await DialogService.ShowAsync<EditUserDialog>(null, parameters);
+    }
+
+    private static Color GetRoleColor(string role) => role switch
+    {
+        "Admin" => Color.Warning,
+        "User" => Color.Secondary,
+        "Editor" => Color.Info,
+        _ => Color.Default
+    };
+
+    private async Task SearchUserById()
+    {
+        _searchError = string.Empty;
+
+        if (string.IsNullOrWhiteSpace(_searchUserId))
+        {
+            await LoadUsers();
+            _isFiltered = false;
+            return;
+        }
+
+        if (!ObjectId.TryParse(_searchUserId, out var userId))
+        {
+            _searchError = "Некорректный формат ID пользователя";
+            return;
+        }
+
+        try
+        {
+            _isLoading = true;
+            if (await UserService.GetUser(userId) is { } user)
+            {
+                _users = [user];
+            }
+            else
+            {
+                _users = [];
+            }
+
+            _isFiltered = true;
+
+            if (_users.Count == 0)
+            {
+                Snackbar.Add("Пользователи по указанному ID не найдены", Severity.Info);
+            }
+        }
+        catch (Exception e)
+        {
+            Logger.LogError(e, "Ошибка при поиске пользователя {UserId}", userId);
+            Snackbar.Add("Ошибка при поиске реквизитов", Severity.Error);
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private async Task ClearSearch()
+    {
+        _searchUserId = string.Empty;
+        _searchError = string.Empty;
+        _isFiltered = false;
+        await LoadUsers();
+    }
+
+    private async Task HandleKeyDown(KeyboardEventArgs args)
+    {
+        if (args.Key == "Enter")
+        {
+            await SearchUserById();
+        }
+    }
+
+}

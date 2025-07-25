@@ -15,7 +15,8 @@ builder.Services.AddCarter();
 builder.Services.AddEndpointsApiExplorer();
 
 builder.Services.AddApplication();
-builder.Services.AddInfrastructure(builder.Configuration);
+builder.Services.AddMongoDb(builder.Configuration);
+builder.Services.AddIdentity(builder.Configuration);
 
 ConfigureCors.Configure(builder);
 ConfigureJwt.Configure(builder);
