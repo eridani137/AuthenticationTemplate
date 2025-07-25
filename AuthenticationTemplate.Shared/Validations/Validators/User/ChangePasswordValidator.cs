@@ -11,7 +11,8 @@ public class ChangePasswordValidator : BaseValidator<ChangePasswordRequest>
         RuleFor(x => x.CurrentPassword).ValidPassword();
         RuleFor(x => x.NewPassword)
             .ValidPassword()
-            .Equal(x => x.CurrentPassword).WithMessage("Задайте другой пароль");
+            .Must((model, newPassword) => newPassword != model.CurrentPassword)
+            .WithMessage("Новый пароль не должен совпадать с текущим");
         RuleFor(x => x.ConfirmNewPassword)
             .NotEmpty().WithMessage("Подтвердите введенный пароль")
             .Equal(x => x.NewPassword).WithMessage("Пароли не совпадают");
