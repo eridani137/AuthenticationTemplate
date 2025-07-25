@@ -101,6 +101,8 @@
             {
                 _isDarkMode = await _themeProvider.GetSystemDarkModeAsync();
             }
+
+            await AuthStateProvider.RefreshStateAsync();
         
             await InvokeAsync(StateHasChanged);
         }

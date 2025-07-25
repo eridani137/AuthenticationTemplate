@@ -35,8 +35,8 @@ public static class ConfigureLogging
             .Enrich.WithEnvironmentName()
             .Enrich.WithExceptionDetails()
             .Enrich.WithProperty("ServiceName", serviceName)
-            .WriteTo.Console(outputTemplate: outputTemplate, levelSwitch: levelSwitch)
-            .WriteTo.File($"{logsPath}/.log", rollingInterval: RollingInterval.Day, outputTemplate: outputTemplate, levelSwitch: levelSwitch);
+            .WriteTo.Console(outputTemplate: outputTemplate, levelSwitch: levelSwitch);
+            // .WriteTo.File($"{logsPath}/.log", rollingInterval: RollingInterval.Day, outputTemplate: outputTemplate, levelSwitch: levelSwitch);
 
         if (!string.IsNullOrWhiteSpace(endpoint) && !string.IsNullOrWhiteSpace(serviceName))
         {

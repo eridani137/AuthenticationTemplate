@@ -9,6 +9,8 @@
       - ASPNETCORE_URLS=http://+:5544
       - OTEL_SERVICE_NAME=Auth.Api
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://seq:5341
+    volumes:
+      - ./keys:/root/.aspnet/DataProtection-Keys
     depends_on:
       - mongo
       - seq
@@ -25,6 +27,8 @@
       - ASPNETCORE_URLS=http://+:5566
       - OTEL_SERVICE_NAME=AdminPanel
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://seq:5341
+    volumes:
+      - ./keys:/root/.aspnet/DataProtection-Keys
     depends_on:
       - mongo
       - seq

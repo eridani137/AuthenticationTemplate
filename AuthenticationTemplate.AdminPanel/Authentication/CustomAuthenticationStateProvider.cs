@@ -1,5 +1,6 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using AuthenticationTemplate.AdminPanel.Services;
 using AuthenticationTemplate.Shared.DTOs;
 using Blazored.LocalStorage;
 using Microsoft.AspNetCore.Components.Authorization;
@@ -7,7 +8,10 @@ using Microsoft.JSInterop;
 
 namespace AuthenticationTemplate.AdminPanel.Authentication;
 
-public class CustomAuthenticationStateProvider(ILocalStorageService localStorage, IJSRuntime jsRuntime) : AuthenticationStateProvider
+public class CustomAuthenticationStateProvider(
+    ILocalStorageService localStorage,
+    HttpClient client,
+    IJSRuntime jsRuntime) : AuthenticationStateProvider
 {
     private const string TokenKey = "access_token";
     private const string RefreshKey = "refresh_token";
@@ -16,13 +20,11 @@ public class CustomAuthenticationStateProvider(ILocalStorageService localStorage
     public string? Token { get; private set; }
     public string? RefreshToken { get; private set; }
 
-    // Проверяем, доступен ли JavaScript interop
     private bool IsJavaScriptAvailable()
     {
         try
         {
-            // Простая проверка на доступность JS
-            return jsRuntime is not IJSInProcessRuntime && 
+            return jsRuntime is not IJSInProcessRuntime &&
                    jsRuntime.GetType().Name != "UnsupportedJavaScriptRuntime";
         }
         catch
@@ -31,7 +33,7 @@ public class CustomAuthenticationStateProvider(ILocalStorageService localStorage
         }
     }
 
-    public async Task<string> GetTokenFromLocalStorageAsync()
+    private async Task<string> GetTokenFromLocalStorageAsync()
     {
         if (!IsJavaScriptAvailable())
         {
@@ -51,16 +53,14 @@ public class CustomAuthenticationStateProvider(ILocalStorageService localStorage
             return string.Empty;
         }
     }
-    
+
     public override async Task<AuthenticationState> GetAuthenticationStateAsync()
     {
-        // Во время prerendering всегда возвращаем анонимного пользователя
         if (!IsJavaScriptAvailable())
         {
             return new AuthenticationState(_anonymous);
         }
 
-        // Если токен еще не загружен, пытаемся загрузить из localStorage
         if (string.IsNullOrEmpty(Token))
         {
             Token = await GetTokenFromLocalStorageAsync();
@@ -79,7 +79,7 @@ public class CustomAuthenticationStateProvider(ILocalStorageService localStorage
     {
         Token = response.AccessToken;
         RefreshToken = response.RefreshToken;
-        
+
         if (IsJavaScriptAvailable())
         {
             try
@@ -87,16 +87,12 @@ public class CustomAuthenticationStateProvider(ILocalStorageService localStorage
                 await localStorage.SetItemAsync(TokenKey, response.AccessToken);
                 await localStorage.SetItemAsync(RefreshKey, response.RefreshToken);
             }
-            catch (InvalidOperationException)
+            catch
             {
-                // JavaScript недоступен, токены остаются только в памяти
-            }
-            catch (JSException)
-            {
-                // Ошибка JavaScript, токены остаются только в памяти
+                // ignored
             }
         }
-        
+
         NotifyAuthenticationStateChanged(GetAuthenticationStateAsync());
     }
 
@@ -104,7 +100,7 @@ public class CustomAuthenticationStateProvider(ILocalStorageService localStorage
     {
         Token = null;
         RefreshToken = null;
-        
+
         if (IsJavaScriptAvailable())
         {
             try
@@ -112,37 +108,57 @@ public class CustomAuthenticationStateProvider(ILocalStorageService localStorage
                 await localStorage.RemoveItemAsync(TokenKey);
                 await localStorage.RemoveItemAsync(RefreshKey);
             }
-            catch (InvalidOperationException)
+            catch
             {
-                // JavaScript недоступен
-            }
-            catch (JSException)
-            {
-                // Ошибка JavaScript
+                // ignored
             }
         }
-        
+
         NotifyAuthenticationStateChanged(GetAuthenticationStateAsync());
     }
 
-    // Вызывать этот метод после завершения prerendering
     public async Task RefreshStateAsync()
     {
-        if (IsJavaScriptAvailable() && string.IsNullOrEmpty(Token))
+        if (!IsJavaScriptAvailable()) return;
+
+        Token ??= await GetTokenFromLocalStorageAsync();
+
+        if (string.IsNullOrEmpty(Token))
         {
-            Token = await GetTokenFromLocalStorageAsync();
-            if (!string.IsNullOrEmpty(Token))
+            NotifyAuthenticationStateChanged(Task.FromResult(new AuthenticationState(_anonymous)));
+            return;
+        }
+
+        RefreshToken ??= await localStorage.GetItemAsync<string>(RefreshKey);
+
+        if (!IsTokenExpired(Token))
+        {
+            NotifyAuthenticationStateChanged(GetAuthenticationStateAsync());
+            return;
+        }
+
+        if (string.IsNullOrEmpty(RefreshToken))
+        {
+            await MarkUserAsLoggedOut();
+            return;
+        }
+
+        try
+        {
+            var result = await AuthService.RefreshToken(client, new RefreshTokenRequest(RefreshToken));
+
+            if (result is not null)
             {
-                try
-                {
-                    RefreshToken = await localStorage.GetItemAsync<string>(RefreshKey);
-                }
-                catch
-                {
-                    // Игнорируем ошибки при загрузке refresh token
-                }
-                NotifyAuthenticationStateChanged(GetAuthenticationStateAsync());
+                await MarkUserAsAuthenticated(result);
             }
+            else
+            {
+                await MarkUserAsLoggedOut();
+            }
+        }
+        catch
+        {
+            await MarkUserAsLoggedOut();
         }
     }
 
@@ -153,8 +169,8 @@ public class CustomAuthenticationStateProvider(ILocalStorageService localStorage
         var claims = token.Claims;
         return new ClaimsIdentity(claims, "jwt");
     }
-    
-    public static bool IsTokenExpired(string token)
+
+    private static bool IsTokenExpired(string token)
     {
         try
         {

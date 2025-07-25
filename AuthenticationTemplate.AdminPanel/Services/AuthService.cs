@@ -20,11 +20,21 @@ public class AuthService(HttpClient client)
                 return required2FaCode;
             }
         }
-        
-        if (!response.IsSuccessStatusCode) return new ClientAuthResponse(null, false, response.StatusCode, "Ошибка авторизации");
+
+        if (!response.IsSuccessStatusCode)
+            return new ClientAuthResponse(null, false, response.StatusCode, "Ошибка авторизации");
 
         var authResponse = await response.Content.ReadFromJsonAsync<AuthResponse>();
 
         return new ClientAuthResponse(authResponse, false, response.StatusCode, null);
+    }
+
+    public static async Task<AuthResponse?> RefreshToken(HttpClient client, RefreshTokenRequest request)
+    {
+        var response = await client.PostAsJsonAsync($"{Endpoint}/refresh-token", request);
+
+        if (!response.IsSuccessStatusCode) return null;
+
+        return await response.Content.ReadFromJsonAsync<AuthResponse>();
     }
 }
