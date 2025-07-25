@@ -10,7 +10,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Blazored.LocalStorage" Version="4.5.0"/>
         <PackageReference Include="MudBlazor" Version="8.10.0"/>
     </ItemGroup>
 

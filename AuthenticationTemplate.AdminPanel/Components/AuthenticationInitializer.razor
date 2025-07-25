@@ -1,0 +1,12 @@
+@using AuthenticationTemplate.Shared.Authentication
+@inject CustomAuthenticationStateProvider AuthStateProvider
+
+@code {
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await AuthStateProvider.RefreshStateAsync();
+        }
+    }
+}

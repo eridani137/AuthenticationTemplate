@@ -1,82 +1,137 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using AuthenticationTemplate.Shared.DTOs;
-using AuthenticationTemplate.Shared.Interfaces;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
+using Microsoft.JSInterop;
 
 namespace AuthenticationTemplate.Shared.Authentication;
 
 public class CustomAuthenticationStateProvider(
-    ITokenStorage tokenStorage,
     HttpClient client,
-    NavigationManager navigation)
+    NavigationManager navigation,
+    ProtectedLocalStorage storage,
+    IJSRuntime jsRuntime)
     : AuthenticationStateProvider
 {
     private readonly ClaimsPrincipal _anonymous = new(new ClaimsIdentity());
     private AuthenticationState? _cachedAuthState;
+    private bool _isPrerendering = true;
+    
+    public const string TokenKey = "tokens";
 
     public override async Task<AuthenticationState> GetAuthenticationStateAsync()
     {
         try
         {
             if (_cachedAuthState != null) return _cachedAuthState;
-                
-            var token = await tokenStorage.GetTokenAsync();
-            
-            if (string.IsNullOrEmpty(token) || IsExpired(token))
+
+            if (_isPrerendering)
+            {
+                try
+                {
+                    await jsRuntime.InvokeAsync<bool>("window.hasOwnProperty", "localStorage");
+                    _isPrerendering = false;
+                }
+                catch (InvalidOperationException)
+                {
+                    _cachedAuthState = new AuthenticationState(_anonymous);
+                    return _cachedAuthState;
+                }
+                catch (JSException)
+                {
+                    _isPrerendering = false;
+                }
+            }
+
+            var authResponse = (await storage.GetAsync<AuthResponse>(TokenKey)).Value;
+
+            if (authResponse is null || IsExpired(authResponse.AccessToken))
             {
                 _cachedAuthState = new AuthenticationState(_anonymous);
                 return _cachedAuthState;
             }
 
-            var identity = ParseClaimsFromJwt(token);
+            var identity = ParseClaimsFromJwt(authResponse.AccessToken);
             _cachedAuthState = new AuthenticationState(new ClaimsPrincipal(identity));
             return _cachedAuthState;
         }
-        catch (InvalidOperationException ex) when (ex.Message.Contains("JavaScript interop"))
+        catch (InvalidOperationException)
+        {
+            return new AuthenticationState(_anonymous);
+        }
+        catch
         {
             return new AuthenticationState(_anonymous);
         }
     }
 
-    public async Task MarkUserAsAuthenticated(AuthResponse resp)
+    public async Task MarkUserAsAuthenticated(AuthResponse response)
     {
-        await tokenStorage.StoreTokensAsync(resp.AccessToken, resp.RefreshToken);
-        _cachedAuthState = null;
-        NotifyAuthenticationStateChanged(GetAuthenticationStateAsync());
+        try
+        {
+            await storage.SetAsync(TokenKey, response);
+            _cachedAuthState = null;
+            _isPrerendering = false;
+            NotifyAuthenticationStateChanged(GetAuthenticationStateAsync());
+        }
+        catch
+        {
+            // ignored
+        }
     }
 
     public async Task MarkUserAsLoggedOut()
     {
-        await tokenStorage.ClearTokensAsync();
-        _cachedAuthState = null;
-        NotifyAuthenticationStateChanged(GetAuthenticationStateAsync());
+        try
+        {
+            await storage.DeleteAsync(TokenKey);
+            _cachedAuthState = new AuthenticationState(_anonymous);
+            _isPrerendering = false;
+            NotifyAuthenticationStateChanged(GetAuthenticationStateAsync());
+        }
+        catch
+        {
+            _cachedAuthState = new AuthenticationState(_anonymous);
+            NotifyAuthenticationStateChanged(Task.FromResult(_cachedAuthState));
+        }
     }
 
     public async Task RefreshStateAsync()
     {
-        var refresh = await tokenStorage.GetRefreshTokenAsync();
-        
-        if (string.IsNullOrEmpty(refresh))
-        {
-            await MarkUserAsLoggedOut();
-            return;
-        }
+        _isPrerendering = false;
+        _cachedAuthState = null;
 
-        var result = await AuthenticationClientService.RefreshToken(client, new RefreshTokenRequest(refresh));
-        if (result.AuthResponse is null)
+        var authResponse = (await storage.GetAsync<AuthResponse>(TokenKey)).Value;
+
+        if (authResponse is not null)
         {
-            await MarkUserAsLoggedOut();
-        }
-        else
-        {
-            await MarkUserAsAuthenticated(result.AuthResponse);
-            // navigation.NavigateTo(navigation.Uri, forceLoad: true);
+            if (IsExpired(authResponse.AccessToken))
+            {
+                if (string.IsNullOrEmpty(authResponse.RefreshToken))
+                {
+                    await MarkUserAsLoggedOut();
+                    navigation.NavigateTo("/login", forceLoad: true);
+                }
+                else
+                {
+                    var result = await AuthenticationClientService.RefreshToken(client, new RefreshTokenRequest(authResponse.RefreshToken));
+                    if (result.AuthResponse is not null)
+                    {
+                        await MarkUserAsAuthenticated(result.AuthResponse);
+                        navigation.NavigateTo(navigation.Uri, forceLoad: true);
+                    }
+                    else
+                    {
+                        await MarkUserAsLoggedOut();
+                    }
+                }
+            }
         }
     }
 
-    private static ClaimsIdentity ParseClaimsFromJwt(string jwt)
+    public static ClaimsIdentity ParseClaimsFromJwt(string jwt)
     {
         var handler = new JwtSecurityTokenHandler();
         var token = handler.ReadJwtToken(jwt);
@@ -88,8 +143,8 @@ public class CustomAuthenticationStateProvider(
             roleType: "role"
         );
     }
-    
-    private static bool IsExpired(string token)
+
+    public static bool IsExpired(string token)
     {
         try
         {

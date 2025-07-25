@@ -6,7 +6,6 @@
 @attribute [Authorize]
 @inject AuthenticationClientService Auth
 @inject ISnackbar Snackbar
-@rendermode @(new InteractiveServerRenderMode(false))
 
 <MudContainer>
     <MudGrid Justify="Justify.Center" Class="mt-6">
@@ -65,7 +64,7 @@
     private MudForm _form = null!;
     private string? _errorMessage;
     private ChangePasswordValidator _validator = new();
-    
+
     private async Task ChangePassword()
     {
         _errorMessage = null;

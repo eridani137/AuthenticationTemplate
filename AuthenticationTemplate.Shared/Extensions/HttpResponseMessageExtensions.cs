@@ -16,19 +16,21 @@ public static class HttpResponseMessageExtensions
             : null;
     }
 
-    public static async Task<ClientAuthResponse?> HasRequired2FaCode(this HttpResponseMessage response)
+    public static async Task<(ClientAuthResponse?, ProblemDetails?)> HasRequired2FaCode(
+        this HttpResponseMessage response)
     {
         var problem = await GetProblemDetails(response);
 
-        if (problem is null) return null;
-        
+        if (problem is null) return (null, null);
+
         if (problem.Extensions.TryGetValue("2FARequired", out var obj) &&
             obj is JsonElement { ValueKind: JsonValueKind.True })
         {
-            return new ClientAuthResponse(null, true, new ServerResponse(response.StatusCode, problem.Detail));
+            return (new ClientAuthResponse(null, true, new ServerResponse(response.StatusCode, problem.Detail)),
+                problem);
         }
 
-        return null;
+        return (null, problem);
     }
 
     public static async Task<ProblemDetails?> GetProblemDetails(this HttpResponseMessage response)

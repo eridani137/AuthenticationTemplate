@@ -1,6 +1,5 @@
 ﻿@using AuthenticationTemplate.Shared.Authentication
 @inherits LayoutComponentBase
-@inject ILocalStorageService LocalStorage
 @inject CustomAuthenticationStateProvider AuthStateProvider
 @inject NavigationManager Navigation
 
@@ -9,6 +8,7 @@
 <MudDialogProvider FullWidth="true" MaxWidth="MaxWidth.Medium" CloseButton="true" BackdropClick="false"
                    Position="DialogPosition.Center" CloseOnEscapeKey="true"/>
 <MudSnackbarProvider/>
+<AuthenticationInitializer />
 
 <MudLayout>
 
@@ -85,24 +85,22 @@
     private bool _isDarkMode = true;
     private MudThemeProvider _themeProvider = null!;
     private MudTheme? _theme;
-    private const string ThemeKey = "preferred-theme";
     private bool _openDrawer;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
-            var hasValue = await LocalStorage.ContainKeyAsync(ThemeKey);
-            if (hasValue)
-            {
-                _isDarkMode = await LocalStorage.GetItemAsync<bool>(ThemeKey);
-            }
-            else
-            {
-                _isDarkMode = await _themeProvider.GetSystemDarkModeAsync();
-            }
-            
-            await AuthStateProvider.RefreshStateAsync();
+            _isDarkMode = await _themeProvider.GetSystemDarkModeAsync();
+
+            // if (!AuthService.IsLoggedIn)
+            // {
+            //     var result = await AuthService.GetStateFromTokenAsync();
+            //     if (result)
+            //     {
+            //         Navigation.Refresh();
+            //     }
+            // }
         
             await InvokeAsync(StateHasChanged);
         }
@@ -128,7 +126,6 @@
     private async Task DarkModeToggle()
     {
         _isDarkMode = !_isDarkMode;
-        await LocalStorage.SetItemAsync(ThemeKey, _isDarkMode);
         await InvokeAsync(StateHasChanged);
     }
 

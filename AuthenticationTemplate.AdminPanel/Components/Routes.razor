@@ -1,9 +1,9 @@
 ﻿@using AuthenticationTemplate.AdminPanel.Components.Layout
 
-<CascadingAuthenticationState @rendermode="@(new InteractiveServerRenderMode(false))">
+<CascadingAuthenticationState>
     <Router AppAssembly="typeof(Program).Assembly">
         <Found Context="routeData">
-            <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" @rendermode="@(new InteractiveServerRenderMode(false))">
+            <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)">
                 <NotAuthorized>
                     <RedirectToLogin/>
                 </NotAuthorized>

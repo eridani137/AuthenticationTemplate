@@ -5,8 +5,6 @@ using AuthenticationTemplate.Core.Configuration;
 using AuthenticationTemplate.Infrastructure;
 using AuthenticationTemplate.Shared.Authentication;
 using AuthenticationTemplate.Shared.Configs;
-using AuthenticationTemplate.Shared.Interfaces;
-using Blazored.LocalStorage;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.Extensions.Options;
@@ -54,40 +52,39 @@ builder.Services.AddSignalR(options =>
     options.EnableDetailedErrors = builder.Environment.IsDevelopment();
 });
 
-builder.Services.AddBlazoredLocalStorage();
-
-builder.Services.AddScoped<ITokenStorage, LocalTokenStorage>();
+builder.Services.AddAuthorization();
+builder.Services.AddAuthenticationCore();
 
 builder.Services.AddScoped<UserService>();
+
+builder.Services.AddScoped<CustomAuthenticationMessageHandler>();
 
 builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthenticationStateProvider>();
 builder.Services.AddScoped<CustomAuthenticationStateProvider>();
 
-builder.Services.AddScoped<AuthenticationMessageHandler>();
-
 builder.Services.AddScoped<AuthenticationClientService>();
 
-builder.Services.AddHttpClient<AuthenticationClientService>((sp, client) =>
+builder.Services.AddHttpClient<CustomAuthenticationStateProvider>((sp, client) =>
     {
         var config = sp.GetRequiredService<IOptions<ApiConfig>>().Value;
 
         client.BaseAddress = new Uri(config.BaseEndpoint);
-        client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+        client.DefaultRequestHeaders.Add("Accept", "application/json");
     })
-    .AddHttpMessageHandler<AuthenticationMessageHandler>();
+    .AddHttpMessageHandler<CustomAuthenticationMessageHandler>();
 
-builder.Services.AddHttpClient<CustomAuthenticationStateProvider>((sp, client) =>
+builder.Services.AddHttpClient<AuthenticationClientService>((sp, client) =>
 {
     var config = sp.GetRequiredService<IOptions<ApiConfig>>().Value;
 
     client.BaseAddress = new Uri(config.BaseEndpoint);
-    client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+    client.DefaultRequestHeaders.Add("Accept", "application/json");
 });
+
+builder.Services.AddCascadingAuthenticationState();
 
 ConfigureCors.Configure(builder);
 ConfigureJwt.Configure(builder);
-
-builder.Services.AddAuthorizationCore();
 
 var app = builder.Build();
 
