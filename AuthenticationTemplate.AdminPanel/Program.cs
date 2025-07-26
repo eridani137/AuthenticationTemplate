@@ -56,7 +56,7 @@ builder.Services.AddSignalR(options =>
 builder.Services.AddAuthorization();
 builder.Services.AddAuthenticationCore();
 
-builder.Services.AddScoped<UserService>();
+builder.Services.AddScoped<AdminService>();
 
 builder.Services.AddScoped<CustomAuthenticationMessageHandler>();
 

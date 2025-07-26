@@ -1,11 +1,14 @@
 @page "/users"
+@using System.Net
 @using AuthenticationTemplate.AdminPanel.Services
+@using AuthenticationTemplate.ClientCore.Components.Dialogs
 @using AuthenticationTemplate.Shared.DTOs
 @using MongoDB.Bson
 @attribute [Authorize(Roles = "Admin")]
 @inject ILogger<Users> Logger
 @inject ISnackbar Snackbar
-@inject UserService UserService
+@inject AdminService AdminService
+@inject IDialogService DialogService
 
 <MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="mt-4">
     <MudPaper Class="pa-4" Elevation="12" Style="height: 100%; display: flex; flex-direction: column;">
@@ -26,7 +29,7 @@
                               ErrorText="@_searchError"
                               Style="width: 600px"
                               Immediate="true"
-                              OnKeyDown="@(HandleKeyDown)" />
+                              OnKeyDown="@(HandleKeyDown)"/>
                 @if (_isFiltered)
                 {
                     <MudButton Color="Color.Secondary"
@@ -73,12 +76,14 @@
                                            OnClick="@(() => OpenEditDialog(cellContext.Item))"
                                            Icon="@Icons.Material.Filled.Edit"
                                            Color="Color.Primary"
-                                           Size="Size.Small"/>
+                                           Size="Size.Small"
+                                           Disabled="@(cellContext.Item.Username.ToLower() == "root")"/>
                             <MudIconButton Variant="Variant.Outlined"
                                            OnClick="@(() => DeleteUser(cellContext.Item))"
                                            Icon="@Icons.Material.Filled.Delete"
                                            Color="Color.Error"
-                                           Size="Size.Small"/>
+                                           Size="Size.Small"
+                                           Disabled="@(cellContext.Item.Username.ToLower() == "root")"/>
                         </MudStack>
                     </CellTemplate>
                 </TemplateColumn>
@@ -104,7 +109,7 @@
         try
         {
             _isLoading = true;
-            _users = await UserService.GetUsers();
+            _users = await AdminService.GetUsers();
         }
         catch (Exception e)
         {
@@ -125,36 +130,36 @@
             ["ButtonText"] = "Удалить"
         };
 
-        // var dialog = await DialogService.ShowAsync<ConfirmationDialog>(null, parameters);
-        // var result = await dialog.Result;
-        //
-        // if (result is { Canceled: false })
-        // {
-        //     try
-        //     {
-        //         _isLoading = true;
-        //         var deleteResult = await AdminService.DeleteUser(user.Id);
-        //
-        //         if (deleteResult.Code == HttpStatusCode.OK)
-        //         {
-        //             Snackbar.Add($"Пользователь {user.Username} успешно удален", Severity.Success);
-        //         }
-        //         else
-        //         {
-        //             var error = !string.IsNullOrEmpty(deleteResult.Content) ? deleteResult.Content : "Ошибка при удалении пользователя";
-        //             Snackbar.Add(error, Severity.Error);
-        //         }
-        //     }
-        //     catch (Exception e)
-        //     {
-        //         Logger.LogError(e, "Ошибка при удалении пользователя {UserId}", user.Id);
-        //         Snackbar.Add(e.Message, Severity.Error);
-        //     }
-        //     finally
-        //     {
-        //         _isLoading = false;
-        //     }
-        // }
+        var dialog = await DialogService.ShowAsync<ConfirmDialog>(null, parameters);
+        var result = await dialog.Result;
+
+        if (result is { Canceled: false })
+        {
+            try
+            {
+                _isLoading = true;
+                var deleteResult = await AdminService.DeleteUser(user.Id);
+
+                if (deleteResult.OperationStatus)
+                {
+                    Snackbar.Add(deleteResult.Message ?? $"Пользователь {user.Username} успешно удален", Severity.Success);
+                    _users.Remove(user);
+                }
+                else
+                {
+                    Snackbar.Add(deleteResult.Message ?? "Ошибка при удалении пользователя");
+                }
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e, "Ошибка при удалении пользователя {UserId}", user.Id);
+                Snackbar.Add(e.Message, Severity.Error);
+            }
+            finally
+            {
+                _isLoading = false;
+            }
+        }
     }
 
     private async Task OpenEditDialog(UserDto user)
@@ -195,7 +200,7 @@
         try
         {
             _isLoading = true;
-            if (await UserService.GetUser(userId) is { } user)
+            if (await AdminService.GetUser(userId) is { } user)
             {
                 _users = [user];
             }
