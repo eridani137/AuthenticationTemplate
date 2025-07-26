@@ -1,11 +1,9 @@
+@using AuthenticationTemplate.ClientCore.Interfaces
 @using AuthenticationTemplate.Shared.DTOs
-@using AuthenticationTemplate.Shared.Interfaces
 @using AuthenticationTemplate.Shared.Validations.Validators.User
-@using Microsoft.JSInterop
-@using MudBlazor
 @inject ISnackbar Snackbar
 @inject IJSRuntime JsRuntime
-@inject IApiClient ApiClient
+@inject IApiClient Api
 
 <MudDialog>
     <DialogContent>
@@ -121,7 +119,7 @@
 
         try
         {
-            var setupTwoFactorRequest = await ApiClient.GetTwoFactorSetup();
+            var setupTwoFactorRequest = await Api.GetTwoFactorSetup();
             if (setupTwoFactorRequest.SetupTwoFactorRequest is not null)
             {
                 _twoFactorData = setupTwoFactorRequest.SetupTwoFactorRequest;
@@ -158,7 +156,7 @@
 
         try
         {
-            var response = await ApiClient.EnableTwoFactor(_twoFactorCodeRequest);
+            var response = await Api.EnableTwoFactor(_twoFactorCodeRequest);
             
             if (response.RecoveryCodes is null)
             {

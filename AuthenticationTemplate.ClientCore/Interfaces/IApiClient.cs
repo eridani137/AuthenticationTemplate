@@ -1,6 +1,6 @@
 using AuthenticationTemplate.Shared.DTOs;
 
-namespace AuthenticationTemplate.Shared.Interfaces;
+namespace AuthenticationTemplate.ClientCore.Interfaces;
 
 public interface IApiClient
 {

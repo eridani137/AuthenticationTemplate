@@ -9,24 +9,7 @@
     <ItemGroup>
       <PackageReference Include="AspNetCore.Identity.Mongo" Version="10.1.0" />
       <PackageReference Include="FluentValidation" Version="12.0.0" />
-      <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="2.3.0" />
-      <PackageReference Include="Microsoft.Extensions.Options" Version="9.0.7" />
       <PackageReference Include="MongoDB.Bson" Version="3.4.2" />
-      <PackageReference Include="MudBlazor" Version="8.10.0" />
-      <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-      <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.13.0" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <Reference Include="Microsoft.AspNetCore.Components.Authorization">
-        <HintPath>C:\Program Files\dotnet\shared\Microsoft.AspNetCore.App\9.0.7\Microsoft.AspNetCore.Components.Authorization.dll</HintPath>
-      </Reference>
-    </ItemGroup>
-
-    <ItemGroup>
-      <Content Update="Dialogs\TwoFactorDisableDialog.razor">
-        <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
-      </Content>
     </ItemGroup>
 
 </Project>

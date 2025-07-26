@@ -1,16 +1,16 @@
 using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
-using AuthenticationTemplate.Shared.Authentication;
+using AuthenticationTemplate.ClientCore.Authentication;
+using AuthenticationTemplate.ClientCore.Extensions;
+using AuthenticationTemplate.ClientCore.Interfaces;
 using AuthenticationTemplate.Shared.DTOs;
-using AuthenticationTemplate.Shared.Extensions;
-using AuthenticationTemplate.Shared.Interfaces;
 using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.JSInterop;
 using LoginRequest = AuthenticationTemplate.Shared.DTOs.LoginRequest;
 
-namespace AuthenticationTemplate.Shared.Services;
+namespace AuthenticationTemplate.ClientCore.Services;
 
 public class ApiClient(HttpClient client, ProtectedLocalStorage storage, IJSRuntime jsRuntime) : IApiClient
 {

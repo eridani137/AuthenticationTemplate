@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
 using Microsoft.JSInterop;
 
-namespace AuthenticationTemplate.Shared.Authentication;
+namespace AuthenticationTemplate.ClientCore.Authentication;
 
 public class CustomAuthenticationMessageHandler(
     ProtectedLocalStorage storage,
@@ -74,11 +74,8 @@ public class CustomAuthenticationMessageHandler(
         {
             if (!_isPrerendering)
             {
-                // Удаляем недействительный токен
-                // await storage.DeleteAsync(CustomAuthenticationStateProvider.TokenKey);
-
-                // Перенаправляем на страницу входа (опционально)
-                // _navigation.NavigateTo("/login", forceLoad: true); // TODO
+                await storage.DeleteAsync(CustomAuthenticationStateProvider.TokenKey);
+                navigation.NavigateTo("/login", forceLoad: true);
             }
         }
         catch (InvalidOperationException)

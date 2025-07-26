@@ -3,7 +3,7 @@ using System.Text.Json;
 using AuthenticationTemplate.Shared.DTOs;
 using Microsoft.AspNetCore.Mvc;
 
-namespace AuthenticationTemplate.Shared.Extensions;
+namespace AuthenticationTemplate.ClientCore.Extensions;
 
 public static class HttpResponseMessageExtensions
 {

@@ -10,10 +10,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="MudBlazor" Version="8.10.0"/>
-    </ItemGroup>
-
-    <ItemGroup>
+      <ProjectReference Include="..\AuthenticationTemplate.ClientCore\AuthenticationTemplate.ClientCore.csproj" />
       <ProjectReference Include="..\AuthenticationTemplate.Core\AuthenticationTemplate.Core.csproj" />
       <ProjectReference Include="..\AuthenticationTemplate.Infrastructure\AuthenticationTemplate.Infrastructure.csproj" />
     </ItemGroup>
@@ -25,7 +22,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <AdditionalFiles Include="Components\Dialogs\TwoFactorSetupDialog.razor" />
+      <PackageReference Include="MudBlazor" Version="8.10.0" />
     </ItemGroup>
 
 </Project>

@@ -1,13 +1,14 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using AuthenticationTemplate.ClientCore.Services;
 using AuthenticationTemplate.Shared.DTOs;
-using AuthenticationTemplate.Shared.Services;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
 using Microsoft.JSInterop;
+using JSException = System.Runtime.InteropServices.JavaScript.JSException;
 
-namespace AuthenticationTemplate.Shared.Authentication;
+namespace AuthenticationTemplate.ClientCore.Authentication;
 
 public class CustomAuthenticationStateProvider(
     HttpClient client,
