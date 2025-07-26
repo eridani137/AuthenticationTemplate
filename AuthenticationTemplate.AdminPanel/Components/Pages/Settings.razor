@@ -2,59 +2,94 @@
 @using System.Net
 @using AuthenticationTemplate.Shared.Authentication
 @using AuthenticationTemplate.Shared.DTOs
+@using AuthenticationTemplate.Shared.Interfaces
 @using AuthenticationTemplate.Shared.Validations.Validators.User
 @attribute [Authorize]
-@inject AuthenticationClientService Auth
+@inject IApiClient Auth
 @inject ISnackbar Snackbar
+
 
 <MudContainer>
     <MudGrid Justify="Justify.Center" Class="mt-6">
         <MudItem xs="12" sm="8" md="6">
-            <MudCard Elevation="12" Class="mt-4">
-                <MudCardContent>
-                    <MudForm @ref="_form" Model="@_changePasswordRequest" Validation="@(_validator.ValidateValue)">
-                        <MudTextField T="string"
-                                     Label="Текущий пароль"
-                                     FullWidth="true"
-                                     @bind-Value="_changePasswordRequest.CurrentPassword"
-                                     InputType="InputType.Password"
-                                     For="@(() => _changePasswordRequest.CurrentPassword)"
-                                     Immediate="true"
-                                     Margin="Margin.Normal"/>
+            <MudTabs Rounded="true" Elevation="0" Class="mud-width-full">
+                <MudTabPanel Text="Сменить пароль">
+                    <MudCard Elevation="6" Class="mt-4 pa-6 mud-width-full">
+                        <MudCardContent>
+                            <MudForm @ref="_form"
+                                     Model="@_changePasswordRequest"
+                                     Validation="@(_validator.ValidateValue)">
+                                <MudTextField T="string"
+                                              Label="Текущий пароль"
+                                              FullWidth
+                                              @bind-Value="_changePasswordRequest.CurrentPassword"
+                                              InputType="InputType.Password"
+                                              For="@(() => _changePasswordRequest.CurrentPassword)"
+                                              Immediate="true"
+                                              Margin="Margin.Normal"/>
 
-                        <MudTextField T="string"
-                                     Label="Новый пароль"
-                                     FullWidth="true"
-                                     @bind-Value="_changePasswordRequest.NewPassword"
-                                     InputType="InputType.Password"
-                                     For="@(() => _changePasswordRequest.NewPassword)"
-                                     Immediate="true"
-                                     Margin="Margin.Normal"/>
+                                <MudTextField T="string"
+                                              Label="Новый пароль"
+                                              FullWidth
+                                              @bind-Value="_changePasswordRequest.NewPassword"
+                                              InputType="InputType.Password"
+                                              For="@(() => _changePasswordRequest.NewPassword)"
+                                              Immediate="true"
+                                              Margin="Margin.Normal"/>
 
-                        <MudTextField T="string"
-                                     Label="Подтверждение пароля"
-                                     FullWidth="true"
-                                     @bind-Value="_changePasswordRequest.ConfirmNewPassword"
-                                     InputType="InputType.Password"
-                                     For="@(() => _changePasswordRequest.ConfirmNewPassword)"
-                                     Immediate="true"
-                                     Margin="Margin.Normal"/>
+                                <MudTextField T="string"
+                                              Label="Подтверждение пароля"
+                                              FullWidth
+                                              @bind-Value="_changePasswordRequest.ConfirmNewPassword"
+                                              InputType="InputType.Password"
+                                              For="@(() => _changePasswordRequest.ConfirmNewPassword)"
+                                              Immediate="true"
+                                              Margin="Margin.Normal"/>
 
-                        @if (!string.IsNullOrEmpty(_errorMessage))
-                        {
-                            <MudAlert Severity="Severity.Error" Class="mt-3 mb-3">@_errorMessage</MudAlert>
-                        }
+                                @if (!string.IsNullOrEmpty(_errorMessage))
+                                {
+                                    <MudAlert Severity="Severity.Error" Class="mt-3 mb-3">
+                                        @_errorMessage
+                                    </MudAlert>
+                                }
 
-                        <MudButton Variant="Variant.Filled"
-                                  Color="Color.Primary"
-                                  FullWidth="true"
-                                  Class="mt-3"
-                                  OnClick="@ChangePassword">
-                            Изменить пароль
-                        </MudButton>
-                    </MudForm>
-                </MudCardContent>
-            </MudCard>
+                                <MudButton Variant="Variant.Filled"
+                                           Color="Color.Primary"
+                                           FullWidth
+                                           Class="mt-3"
+                                           OnClick="@ChangePassword">
+                                    Изменить пароль
+                                </MudButton>
+                            </MudForm>
+                        </MudCardContent>
+                    </MudCard>
+                </MudTabPanel>
+
+                <MudTabPanel Text="Безопасность">
+                    <MudCard Elevation="6" Class="mt-4 pa-6 mud-width-full">
+                        <MudCardContent>
+
+                            <MudGrid>
+                                <MudItem xs="12" sm="6" Class="d-flex align-center">
+                                    <MudText>
+                                        Двухфакторная аутентификация
+                                    </MudText>
+                                </MudItem>
+
+                                <MudItem xs="12" sm="6" Class="d-flex justify-end align-center">
+                                    <MudButton FullWidth="true"
+                                               Color="@(_isTwoFactorEnabled ? Color.Error : Color.Success)"
+                                               Variant="Variant.Filled"
+                                               OnClick="ToggleTwoFactor">
+                                        @(_isTwoFactorEnabled ? "Выключить" : "Включить")
+                                    </MudButton>
+                                </MudItem>
+                            </MudGrid>
+
+                        </MudCardContent>
+                    </MudCard>
+                </MudTabPanel>
+            </MudTabs>
         </MudItem>
     </MudGrid>
 </MudContainer>
@@ -65,12 +100,26 @@
     private string? _errorMessage;
     private ChangePasswordValidator _validator = new();
 
+    private bool _isTwoFactorEnabled;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var twoFactorStatus = await Auth.GetTwoFactorStatus();
+            if (twoFactorStatus is not null)
+            {
+                _isTwoFactorEnabled = twoFactorStatus.IsEnabled;
+            }
+        }
+    }
+
     private async Task ChangePassword()
     {
         _errorMessage = null;
-        
+
         await _form.Validate();
-        
+
         if (_form.IsValid)
         {
             var result = await Auth.ChangePassword(_changePasswordRequest);
@@ -88,4 +137,10 @@
             }
         }
     }
+    
+    private async Task ToggleTwoFactor()
+    {
+        _isTwoFactorEnabled = !_isTwoFactorEnabled;
+    }
+
 }

@@ -11,10 +11,10 @@ public interface IAuthentificationService
     Task<IResult> Login(LoginRequest request);
     Task<IResult> RefreshToken(RefreshTokenRequest request);
     Task<IResult> Logout(ClaimsPrincipal userPrincipal);
-    Task<IResult> Get2FaStatus(ClaimsPrincipal userPrincipal);
-    Task<IResult> Setup2Fa(ClaimsPrincipal userPrincipal, IConfiguration configuration);
-    Task<IResult> Enable2Fa(AuthenticatorCodeRequest request, ClaimsPrincipal userPrincipal);
-    Task<IResult> Disable2Fa(AuthenticatorCodeRequest request, ClaimsPrincipal userPrincipal);
+    Task<IResult> GetTwoFactorStatus(ClaimsPrincipal userPrincipal);
+    Task<IResult> SetupTwoFactor(ClaimsPrincipal userPrincipal, IConfiguration configuration);
+    Task<IResult> EnableTwoFactor(AuthenticatorCodeRequest request, ClaimsPrincipal userPrincipal);
+    Task<IResult> DisableTwoFactor(AuthenticatorCodeRequest request, ClaimsPrincipal userPrincipal);
     Task<IResult> GenerateRecoveryCodes(ClaimsPrincipal userPrincipal);
     Task<IResult> ChangePassword(ChangePasswordRequest request, ClaimsPrincipal userPrincipal);
 }

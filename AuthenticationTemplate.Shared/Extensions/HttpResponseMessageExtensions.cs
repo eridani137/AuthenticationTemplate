@@ -16,7 +16,7 @@ public static class HttpResponseMessageExtensions
             : null;
     }
 
-    public static async Task<(ClientAuthResponse?, ProblemDetails?)> HasRequired2FaCode(
+    public static async Task<(ClientAuthResponse?, ProblemDetails?)> HasRequiredTwoFactorCode(
         this HttpResponseMessage response)
     {
         var problem = await GetProblemDetails(response);

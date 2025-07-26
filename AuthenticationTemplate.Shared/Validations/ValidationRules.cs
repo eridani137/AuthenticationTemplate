@@ -21,7 +21,7 @@ public static class ValidationRules
             .Matches("[^a-zA-Z0-9]").WithMessage("Пароль должен содержать хотя бы один специальный символ");
     }
 
-    public static IRuleBuilderOptions<T, string> Valid2FaCode<T>(this IRuleBuilder<T, string> rule)
+    public static IRuleBuilderOptions<T, string> ValidTwoFactorCode<T>(this IRuleBuilder<T, string> rule)
     {
         return rule
             .NotEmpty().WithMessage("Введите код аутентификации")

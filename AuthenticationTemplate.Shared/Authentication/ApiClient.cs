@@ -3,28 +3,30 @@ using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using AuthenticationTemplate.Shared.DTOs;
 using AuthenticationTemplate.Shared.Extensions;
+using AuthenticationTemplate.Shared.Interfaces;
 using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.JSInterop;
+using LoginRequest = AuthenticationTemplate.Shared.DTOs.LoginRequest;
 
 namespace AuthenticationTemplate.Shared.Authentication;
 
-public class AuthenticationClientService(HttpClient client, ProtectedLocalStorage storage, IJSRuntime jsRuntime)
+public class ApiClient(HttpClient client, ProtectedLocalStorage storage, IJSRuntime jsRuntime) : IApiClient
 {
     private bool _isPrerendering = true;
-    private const string Endpoint = "/auth";
+    private const string AuthEndpoint = "/auth";
 
     public async Task<ClientAuthResponse> Login(LoginRequest request)
     {
-        var response = await client.PostAsJsonAsync($"{Endpoint}/login", request);
+        var response = await client.PostAsJsonAsync($"{AuthEndpoint}/login", request);
 
         ProblemDetails? problemDetails = null;
         if (response.StatusCode == HttpStatusCode.Unauthorized)
         {
-            var (required2FaCode, problem) = await response.HasRequired2FaCode();
-            if (required2FaCode is not null)
+            var (requiredTwoFactorCode, problem) = await response.HasRequiredTwoFactorCode();
+            if (requiredTwoFactorCode is not null)
             {
-                return required2FaCode;
+                return requiredTwoFactorCode;
             }
             problemDetails = problem;
         }
@@ -41,7 +43,7 @@ public class AuthenticationClientService(HttpClient client, ProtectedLocalStorag
 
     public static async Task<ClientAuthResponse> RefreshToken(HttpClient client, RefreshTokenRequest request)
     {
-        var response = await client.PostAsJsonAsync($"{Endpoint}/refresh-token", request);
+        var response = await client.PostAsJsonAsync($"{AuthEndpoint}/refresh-token", request);
         
         if (!response.IsSuccessStatusCode)
         {
@@ -58,7 +60,7 @@ public class AuthenticationClientService(HttpClient client, ProtectedLocalStorag
     {
         await AddAuthorizationHeaderAsync();
         
-        var response = await client.PostAsJsonAsync($"{Endpoint}/change-password", request);
+        var response = await client.PostAsJsonAsync($"{AuthEndpoint}/change-password", request);
         
         if (!response.IsSuccessStatusCode)
         {
@@ -67,6 +69,20 @@ public class AuthenticationClientService(HttpClient client, ProtectedLocalStorag
         }
 
         return new ServerResponse(response.StatusCode, null);
+    }
+
+    public async Task<TwoFactorStatusResponse?> GetTwoFactorStatus()
+    {
+        await AddAuthorizationHeaderAsync();
+        
+        var response = await client.GetAsync($"{AuthEndpoint}/2fa");
+
+        if (!response.IsSuccessStatusCode)
+        {
+            return null;
+        }
+        
+        return await response.Content.ReadFromJsonAsync<TwoFactorStatusResponse>();
     }
     
     private async Task AddAuthorizationHeaderAsync()

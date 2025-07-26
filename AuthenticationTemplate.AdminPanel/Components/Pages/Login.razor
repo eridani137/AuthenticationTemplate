@@ -1,8 +1,9 @@
 @page "/login"
 @using AuthenticationTemplate.Shared.Authentication
 @using AuthenticationTemplate.Shared.DTOs
+@using AuthenticationTemplate.Shared.Interfaces
 @using AuthenticationTemplate.Shared.Validations.Validators.User
-@inject AuthenticationClientService Auth
+@inject IApiClient Auth
 @inject CustomAuthenticationStateProvider AuthStateProvider
 @inject NavigationManager Navigation
 @attribute [AllowAnonymous]
@@ -80,12 +81,12 @@
         {
             var result = await Auth.Login(_loginRequest);
 
-            if (result.AuthResponse is not null && !result.Require2FaCode)
+            if (result.AuthResponse is not null && !result.RequireTwoFactorCode)
             {
                 await AuthStateProvider.MarkUserAsAuthenticated(result.AuthResponse);
                 Navigation.NavigateTo("/", forceLoad: true);
             }
-            else if (result.AuthResponse is null && result.Require2FaCode)
+            else if (result.AuthResponse is null && result.RequireTwoFactorCode)
             {
                 _twoFactorRequired = true;
                 _errorMessage = result.ServerResponse.Message ?? "Ошибка авторизации";

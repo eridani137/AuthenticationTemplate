@@ -145,19 +145,18 @@ public class AuthentificationService(
         return Results.Ok();
     }
 
-    public async Task<IResult> Get2FaStatus(ClaimsPrincipal userPrincipal)
+    public async Task<IResult> GetTwoFactorStatus(ClaimsPrincipal userPrincipal)
     {
         var user = await userPrincipal.GetUserFromPrincipalAsync(userManager);
         if (user is null) return Results.Unauthorized();
 
-        return Results.Ok(new
-        {
-            Is2faEnabled = await userManager.GetTwoFactorEnabledAsync(user),
-            RecoveryCodesLeft = await userManager.CountRecoveryCodesAsync(user)
-        });
+        return Results.Ok(new TwoFactorStatusResponse(
+            await userManager.GetTwoFactorEnabledAsync(user),
+            await userManager.CountRecoveryCodesAsync(user)
+        ));
     }
 
-    public async Task<IResult> Setup2Fa(ClaimsPrincipal userPrincipal, IConfiguration configuration)
+    public async Task<IResult> SetupTwoFactor(ClaimsPrincipal userPrincipal, IConfiguration configuration)
     {
         var user = await userPrincipal.GetUserFromPrincipalAsync(userManager);
         if (user is null) return Results.Unauthorized();
@@ -173,18 +172,18 @@ public class AuthentificationService(
         var applicationName = configuration["TotpApplicationName"];
         var authenticatorUri = $"otpauth://totp/{applicationName}:{username}?secret={key}&issuer={applicationName}";
 
-        return Results.Ok(new Setup2FaRequest(key!, authenticatorUri.GenerateQrCodeBase64()));
+        return Results.Ok(new SetupTwoFactorRequest(key!, authenticatorUri.GenerateQrCodeBase64()));
     }
 
-    public async Task<IResult> Enable2Fa(AuthenticatorCodeRequest request, ClaimsPrincipal userPrincipal)
+    public async Task<IResult> EnableTwoFactor(AuthenticatorCodeRequest request, ClaimsPrincipal userPrincipal)
     {
         var user = await userPrincipal.GetUserFromPrincipalAsync(userManager);
         if (user is null) return Results.Unauthorized();
 
-        var is2FaTokenValid = await userManager.VerifyTwoFactorTokenAsync(
+        var isTwoFactorTokenValid = await userManager.VerifyTwoFactorTokenAsync(
             user, userManager.Options.Tokens.AuthenticatorTokenProvider, request.Code);
 
-        if (!is2FaTokenValid)
+        if (!isTwoFactorTokenValid)
         {
             return Results.Problem("Код верификации недействителен", statusCode: StatusCodes.Status400BadRequest);
         }
@@ -195,7 +194,7 @@ public class AuthentificationService(
         return Results.Ok(new RecoveryCodesResponse(recoveryCodes));
     }
 
-    public async Task<IResult> Disable2Fa(AuthenticatorCodeRequest request, ClaimsPrincipal userPrincipal)
+    public async Task<IResult> DisableTwoFactor(AuthenticatorCodeRequest request, ClaimsPrincipal userPrincipal)
     {
         var user = await userPrincipal.GetUserFromPrincipalAsync(userManager);
         if (user is null) return Results.Unauthorized();
@@ -206,10 +205,10 @@ public class AuthentificationService(
                 statusCode: StatusCodes.Status400BadRequest);
         }
 
-        var is2FaTokenValid = await userManager.VerifyTwoFactorTokenAsync(
+        var isTwoFactorTokenValid = await userManager.VerifyTwoFactorTokenAsync(
             user, userManager.Options.Tokens.AuthenticatorTokenProvider, request.Code);
 
-        if (!is2FaTokenValid)
+        if (!isTwoFactorTokenValid)
         {
             return Results.Problem("Код недействителен", statusCode: StatusCodes.Status400BadRequest);
         }

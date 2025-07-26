@@ -116,7 +116,7 @@ public class CustomAuthenticationStateProvider(
                 }
                 else
                 {
-                    var result = await AuthenticationClientService.RefreshToken(client, new RefreshTokenRequest(authResponse.RefreshToken));
+                    var result = await ApiClient.RefreshToken(client, new RefreshTokenRequest(authResponse.RefreshToken));
                     if (result.AuthResponse is not null)
                     {
                         await MarkUserAsAuthenticated(result.AuthResponse);

@@ -5,6 +5,7 @@ using AuthenticationTemplate.Core.Configuration;
 using AuthenticationTemplate.Infrastructure;
 using AuthenticationTemplate.Shared.Authentication;
 using AuthenticationTemplate.Shared.Configs;
+using AuthenticationTemplate.Shared.Interfaces;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.Extensions.Options;
@@ -62,7 +63,7 @@ builder.Services.AddScoped<CustomAuthenticationMessageHandler>();
 builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthenticationStateProvider>();
 builder.Services.AddScoped<CustomAuthenticationStateProvider>();
 
-builder.Services.AddScoped<AuthenticationClientService>();
+builder.Services.AddScoped<IApiClient, ApiClient>();
 
 builder.Services.AddHttpClient<CustomAuthenticationStateProvider>((sp, client) =>
     {
@@ -73,15 +74,13 @@ builder.Services.AddHttpClient<CustomAuthenticationStateProvider>((sp, client) =
     })
     .AddHttpMessageHandler<CustomAuthenticationMessageHandler>();
 
-builder.Services.AddHttpClient<AuthenticationClientService>((sp, client) =>
+builder.Services.AddHttpClient<IApiClient, ApiClient>((sp, client) =>
 {
     var config = sp.GetRequiredService<IOptions<ApiConfig>>().Value;
 
     client.BaseAddress = new Uri(config.BaseEndpoint);
     client.DefaultRequestHeaders.Add("Accept", "application/json");
 });
-
-builder.Services.AddCascadingAuthenticationState();
 
 ConfigureCors.Configure(builder);
 ConfigureJwt.Configure(builder);

@@ -7,6 +7,6 @@ public class AuthenticatorValidator : BaseValidator<AuthenticatorCodeRequest>
 {
     public AuthenticatorValidator()
     {
-        RuleFor(x => x.Code).Valid2FaCode();
+        RuleFor(x => x.Code).ValidTwoFactorCode();
     }
 }

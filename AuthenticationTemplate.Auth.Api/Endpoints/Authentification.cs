@@ -60,21 +60,21 @@ public class Authentification : ICarterModule
 
         authenticator.MapGet("/",
                 (ClaimsPrincipal claimsPrincipal, IAuthentificationService service) =>
-                    service.Get2FaStatus(claimsPrincipal))
-            .Produces(StatusCodes.Status200OK)
+                    service.GetTwoFactorStatus(claimsPrincipal))
+            .Produces<TwoFactorStatusResponse>()
             .Produces(StatusCodes.Status401Unauthorized)
             .WithName("Получить статус 2FA");
 
         authenticator.MapGet("/setup",
                 (ClaimsPrincipal claimsPrincipal, IAuthentificationService service, IConfiguration configuration) =>
-                    service.Setup2Fa(claimsPrincipal, configuration))
-            .Produces<Setup2FaRequest>()
+                    service.SetupTwoFactor(claimsPrincipal, configuration))
+            .Produces<SetupTwoFactorRequest>()
             .Produces(StatusCodes.Status401Unauthorized)
             .WithName("Настроить аутентификатор");
 
         authenticator.MapPost("/enable",
                 (AuthenticatorCodeRequest request, ClaimsPrincipal claimsPrincipal, IAuthentificationService service) =>
-                    service.Enable2Fa(request, claimsPrincipal))
+                    service.EnableTwoFactor(request, claimsPrincipal))
             .AddEndpointFilter<ValidationFilter<AuthenticatorCodeRequest>>()
             .Produces<RecoveryCodesResponse>()
             .Produces(StatusCodes.Status400BadRequest)
@@ -83,7 +83,7 @@ public class Authentification : ICarterModule
 
         authenticator.MapPost("/disable",
                 (AuthenticatorCodeRequest request, ClaimsPrincipal claimsPrincipal, IAuthentificationService service) =>
-                    service.Disable2Fa(request, claimsPrincipal))
+                    service.DisableTwoFactor(request, claimsPrincipal))
             .AddEndpointFilter<ValidationFilter<AuthenticatorCodeRequest>>()
             .Produces(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status401Unauthorized)
