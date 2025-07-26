@@ -33,17 +33,18 @@ public static class ConfigureJwt
                     ValidAudience = builder.Configuration["JwtConfig:Audience"],
                     ValidateLifetime = true,
                     IssuerSigningKey = new SymmetricSecurityKey(secret),
-                    ValidateIssuerSigningKey = true
+                    ValidateIssuerSigningKey = true,
+                    ClockSkew = TimeSpan.Zero,
                 };
 
                 options.Events = new JwtBearerEvents()
                 {
                     OnTokenValidated = async context =>
                     {
-                        var signInManager = context.HttpContext.RequestServices
-                            .GetRequiredService<SignInManager<ApplicationUser>>();
-                        var user = await signInManager.ValidateSecurityStampAsync(context.Principal);
-                        if (user == null)
+                        var userManager = context.HttpContext.RequestServices
+                            .GetRequiredService<UserManager<ApplicationUser>>();
+                        var user = await userManager.GetUserAsync(context.Principal!);
+                        if (user is null || user.IsDeactivated)
                         {
                             context.Fail("Токен недействителен");
                         }

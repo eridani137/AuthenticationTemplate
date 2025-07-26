@@ -1,6 +1,7 @@
 using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using AuthenticationTemplate.Shared.Authentication;
 using AuthenticationTemplate.Shared.DTOs;
 using AuthenticationTemplate.Shared.Extensions;
 using AuthenticationTemplate.Shared.Interfaces;
@@ -9,7 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.JSInterop;
 using LoginRequest = AuthenticationTemplate.Shared.DTOs.LoginRequest;
 
-namespace AuthenticationTemplate.Shared.Authentication;
+namespace AuthenticationTemplate.Shared.Services;
 
 public class ApiClient(HttpClient client, ProtectedLocalStorage storage, IJSRuntime jsRuntime) : IApiClient
 {
@@ -84,7 +85,56 @@ public class ApiClient(HttpClient client, ProtectedLocalStorage storage, IJSRunt
         
         return await response.Content.ReadFromJsonAsync<TwoFactorStatusResponse>();
     }
+
+    public async Task<ClientSetupTwoFactorRequest> GetTwoFactorSetup()
+    {
+        await AddAuthorizationHeaderAsync();
+        
+        var response = await client.GetAsync($"{AuthEndpoint}/2fa/setup");
+
+        if (!response.IsSuccessStatusCode)
+        {
+            var message = (await response.GetProblemDetails())?.Detail;
+            return new ClientSetupTwoFactorRequest(null, new ServerResponse(response.StatusCode, message));
+        }
+        
+        var setupResponse = await response.Content.ReadFromJsonAsync<SetupTwoFactorRequest>();
+
+        return new ClientSetupTwoFactorRequest(setupResponse, new ServerResponse(response.StatusCode, null));
+    }
+
+    public async Task<ClientRecoveryCodesResponse> EnableTwoFactor(TwoFactorCodeRequest request)
+    {
+        await AddAuthorizationHeaderAsync();
+
+        var response = await client.PostAsJsonAsync($"{AuthEndpoint}/2fa/enable", request);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            var message = (await response.GetProblemDetails())?.Detail;
+            return new ClientRecoveryCodesResponse(null, new ServerResponse(response.StatusCode, message));
+        }
+
+        var codesResponse = await response.Content.ReadFromJsonAsync<RecoveryCodesResponse>();
+
+        return new ClientRecoveryCodesResponse(codesResponse, new ServerResponse(response.StatusCode, null));
+    }
     
+    public async Task<ServerResponse> DisableTwoFactorAsync(TwoFactorCodeRequest request)
+    {
+        await AddAuthorizationHeaderAsync();
+
+        var response = await client.PostAsJsonAsync($"{AuthEndpoint}/2fa/disable", request);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            var message = (await response.GetProblemDetails())?.Detail;
+            return new ServerResponse(response.StatusCode, message);
+        }
+
+        return new ServerResponse(response.StatusCode, null);
+    }
+
     private async Task AddAuthorizationHeaderAsync()
     {
         try

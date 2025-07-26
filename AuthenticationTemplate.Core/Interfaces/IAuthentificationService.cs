@@ -13,8 +13,8 @@ public interface IAuthentificationService
     Task<IResult> Logout(ClaimsPrincipal userPrincipal);
     Task<IResult> GetTwoFactorStatus(ClaimsPrincipal userPrincipal);
     Task<IResult> SetupTwoFactor(ClaimsPrincipal userPrincipal, IConfiguration configuration);
-    Task<IResult> EnableTwoFactor(AuthenticatorCodeRequest request, ClaimsPrincipal userPrincipal);
-    Task<IResult> DisableTwoFactor(AuthenticatorCodeRequest request, ClaimsPrincipal userPrincipal);
+    Task<IResult> EnableTwoFactor(TwoFactorCodeRequest request, ClaimsPrincipal userPrincipal);
+    Task<IResult> DisableTwoFactor(TwoFactorCodeRequest request, ClaimsPrincipal userPrincipal);
     Task<IResult> GenerateRecoveryCodes(ClaimsPrincipal userPrincipal);
     Task<IResult> ChangePassword(ChangePasswordRequest request, ClaimsPrincipal userPrincipal);
 }

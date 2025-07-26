@@ -1,0 +1,85 @@
+@using AuthenticationTemplate.Shared.DTOs
+@using AuthenticationTemplate.Shared.Validations.Validators.User
+@using MudBlazor
+
+<MudDialog>
+    <DialogContent>
+        <MudPaper Class="pa-6">
+            <MudAlert Severity="Severity.Warning" Class="mb-4">
+                Для подтверждения введите код из приложения двухфакторной аутентификации.
+            </MudAlert>
+
+            <MudForm @ref="_form" Model="@_codeRequest" Validation="@_validator.ValidateValue">
+                <MudTextField @bind-Value="_codeRequest.Code"
+                              Label="Код 2FA"
+                              Variant="Variant.Outlined"
+                              InputType="InputType.Number"
+                              For="@(() => _codeRequest.Code)"
+                              FullWidth="true"
+                              MaxLength="6"
+                              Immediate="true"
+                              Class="mb-4"/>
+
+                @if (!string.IsNullOrWhiteSpace(_error))
+                {
+                    <MudAlert Severity="Severity.Error" Class="mb-2">@_error</MudAlert>
+                }
+
+                <MudStack Row="true" Spacing="2">
+                    <MudButton Color="Color.Error" OnClick="@Confirm" Disabled="@_isProcessing"
+                               Variant="Variant.Filled">
+                        @if (_isProcessing)
+                        {
+                            <MudProgressCircular Indeterminate="true" Size="Size.Small" Class="me-2"/>
+                        }
+                        else
+                        {
+                            @("Отключить")
+                        }
+                    </MudButton>
+
+                    <MudButton Color="Color.Default" OnClick="@Cancel" Variant="Variant.Outlined">Отмена</MudButton>
+                </MudStack>
+            </MudForm>
+        </MudPaper>
+    </DialogContent>
+</MudDialog>
+
+@code {
+    [CascadingParameter] public required IMudDialogInstance MudDialog { get; set; }
+
+    private readonly TwoFactorCodeRequest _codeRequest = new("");
+    private readonly TwoFactorCodeValidator _validator = new();
+    private MudForm _form = null!;
+    private string? _error;
+    private bool _isProcessing;
+
+    private async Task Confirm()
+    {
+        _error = null;
+        await _form.Validate();
+
+        if (!_form.IsValid) return;
+
+        _isProcessing = true;
+
+        try
+        {
+            MudDialog.Close(DialogResult.Ok(_codeRequest.Code));
+        }
+        catch (Exception ex)
+        {
+            _error = "Ошибка удаления: " + ex.Message;
+        }
+        finally
+        {
+            _isProcessing = false;
+        }
+    }
+
+    private void Cancel()
+    {
+        MudDialog.Cancel();
+    }
+
+}

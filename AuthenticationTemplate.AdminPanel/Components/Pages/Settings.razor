@@ -1,12 +1,13 @@
 @page "/settings"
 @using System.Net
-@using AuthenticationTemplate.Shared.Authentication
+@using AuthenticationTemplate.AdminPanel.Components.Dialogs
 @using AuthenticationTemplate.Shared.DTOs
 @using AuthenticationTemplate.Shared.Interfaces
 @using AuthenticationTemplate.Shared.Validations.Validators.User
 @attribute [Authorize]
-@inject IApiClient Auth
+@inject IApiClient Api
 @inject ISnackbar Snackbar
+@inject IDialogService DialogService
 
 
 <MudContainer>
@@ -106,7 +107,7 @@
     {
         if (firstRender)
         {
-            var twoFactorStatus = await Auth.GetTwoFactorStatus();
+            var twoFactorStatus = await Api.GetTwoFactorStatus();
             if (twoFactorStatus is not null)
             {
                 _isTwoFactorEnabled = twoFactorStatus.IsEnabled;
@@ -122,7 +123,7 @@
 
         if (_form.IsValid)
         {
-            var result = await Auth.ChangePassword(_changePasswordRequest);
+            var result = await Api.ChangePassword(_changePasswordRequest);
 
             if (result.StatusCode == HttpStatusCode.OK)
             {
@@ -137,10 +138,46 @@
             }
         }
     }
-    
+
     private async Task ToggleTwoFactor()
     {
-        _isTwoFactorEnabled = !_isTwoFactorEnabled;
+        if (!_isTwoFactorEnabled)
+        {
+            var setupDialog = await DialogService.ShowAsync<TwoFactorSetupDialog>("Настройка 2FA",
+                new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true });
+
+            var setupResult = await setupDialog.Result;
+
+            if (setupResult is { Data: true })
+            {
+                _isTwoFactorEnabled = true;
+                Snackbar.Add("Двухфакторная авторизация успешно включена", Severity.Success);
+            }
+        }
+        else
+        {
+            var disableDialog = await DialogService.ShowAsync<TwoFactorDisableDialog>("Отключение 2FA",
+                new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true });
+
+            var disableResult = await disableDialog.Result;
+
+            if (disableResult is { Canceled: true }) return;
+
+            var code = disableResult?.Data?.ToString();
+            if (string.IsNullOrWhiteSpace(code)) return;
+
+            var result = await Api.DisableTwoFactorAsync(new TwoFactorCodeRequest(code));
+
+            if (result.StatusCode == HttpStatusCode.OK)
+            {
+                _isTwoFactorEnabled = false;
+                Snackbar.Add("Двухфакторная авторизация отключена", Severity.Info);
+            }
+            else
+            {
+                Snackbar.Add(result.Message ?? "Не удалось отключить 2FA", Severity.Error);
+            }
+        }
     }
 
 }

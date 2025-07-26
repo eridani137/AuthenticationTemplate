@@ -73,18 +73,18 @@ public class Authentification : ICarterModule
             .WithName("Настроить аутентификатор");
 
         authenticator.MapPost("/enable",
-                (AuthenticatorCodeRequest request, ClaimsPrincipal claimsPrincipal, IAuthentificationService service) =>
+                (TwoFactorCodeRequest request, ClaimsPrincipal claimsPrincipal, IAuthentificationService service) =>
                     service.EnableTwoFactor(request, claimsPrincipal))
-            .AddEndpointFilter<ValidationFilter<AuthenticatorCodeRequest>>()
+            .AddEndpointFilter<ValidationFilter<TwoFactorCodeRequest>>()
             .Produces<RecoveryCodesResponse>()
             .Produces(StatusCodes.Status400BadRequest)
             .Produces(StatusCodes.Status401Unauthorized)
             .WithName("Включить 2FA");
 
         authenticator.MapPost("/disable",
-                (AuthenticatorCodeRequest request, ClaimsPrincipal claimsPrincipal, IAuthentificationService service) =>
+                (TwoFactorCodeRequest request, ClaimsPrincipal claimsPrincipal, IAuthentificationService service) =>
                     service.DisableTwoFactor(request, claimsPrincipal))
-            .AddEndpointFilter<ValidationFilter<AuthenticatorCodeRequest>>()
+            .AddEndpointFilter<ValidationFilter<TwoFactorCodeRequest>>()
             .Produces(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status401Unauthorized)
             .Produces(StatusCodes.Status500InternalServerError)

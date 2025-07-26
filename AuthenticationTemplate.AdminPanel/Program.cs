@@ -6,6 +6,7 @@ using AuthenticationTemplate.Infrastructure;
 using AuthenticationTemplate.Shared.Authentication;
 using AuthenticationTemplate.Shared.Configs;
 using AuthenticationTemplate.Shared.Interfaces;
+using AuthenticationTemplate.Shared.Services;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.Extensions.Options;

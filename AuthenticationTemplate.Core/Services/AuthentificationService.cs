@@ -168,14 +168,13 @@ public class AuthentificationService(
 
         await userManager.ResetAuthenticatorKeyAsync(user);
         var key = await userManager.GetAuthenticatorKeyAsync(user);
-        var username = await userManager.GetUserNameAsync(user);
         var applicationName = configuration["TotpApplicationName"];
-        var authenticatorUri = $"otpauth://totp/{applicationName}:{username}?secret={key}&issuer={applicationName}";
+        var authenticatorUri = $"otpauth://totp/{applicationName}:{user.UserName}?secret={key}&issuer={applicationName}";
 
         return Results.Ok(new SetupTwoFactorRequest(key!, authenticatorUri.GenerateQrCodeBase64()));
     }
 
-    public async Task<IResult> EnableTwoFactor(AuthenticatorCodeRequest request, ClaimsPrincipal userPrincipal)
+    public async Task<IResult> EnableTwoFactor(TwoFactorCodeRequest request, ClaimsPrincipal userPrincipal)
     {
         var user = await userPrincipal.GetUserFromPrincipalAsync(userManager);
         if (user is null) return Results.Unauthorized();
@@ -194,7 +193,7 @@ public class AuthentificationService(
         return Results.Ok(new RecoveryCodesResponse(recoveryCodes));
     }
 
-    public async Task<IResult> DisableTwoFactor(AuthenticatorCodeRequest request, ClaimsPrincipal userPrincipal)
+    public async Task<IResult> DisableTwoFactor(TwoFactorCodeRequest request, ClaimsPrincipal userPrincipal)
     {
         var user = await userPrincipal.GetUserFromPrincipalAsync(userManager);
         if (user is null) return Results.Unauthorized();

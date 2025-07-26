@@ -30,8 +30,7 @@ public class JwtService(IOptions<JwtConfig> config) : IJwtService
         {
             new(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
             new(JwtRegisteredClaimNames.Nickname, user.UserName!),
-            new(JwtRegisteredClaimNames.Jti, Guid.CreateVersion7().ToString()),
-            new("AspNet.Identity.SecurityStamp", user.SecurityStamp!),
+            new(JwtRegisteredClaimNames.Jti, Guid.CreateVersion7().ToString())
         };
 
         claims.AddRange(roleNames.Select(roleName => new Claim(ClaimTypes.Role, roleName)));
