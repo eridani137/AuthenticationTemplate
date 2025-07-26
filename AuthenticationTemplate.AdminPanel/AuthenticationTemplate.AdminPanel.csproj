@@ -25,4 +25,9 @@
       <PackageReference Include="MudBlazor" Version="8.10.0" />
     </ItemGroup>
 
+    <ItemGroup>
+      <_ContentIncludedByDefault Remove="Components\Dialogs\TwoFactorDisableDialog.razor" />
+      <_ContentIncludedByDefault Remove="Components\Dialogs\TwoFactorSetupDialog.razor" />
+    </ItemGroup>
+
 </Project>

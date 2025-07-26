@@ -1,4 +1,7 @@
 ﻿@using AuthenticationTemplate.ClientCore.Authentication
+@using MudBlazor
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Components.Routing
 @inherits LayoutComponentBase
 @inject CustomAuthenticationStateProvider AuthStateProvider
 @inject NavigationManager Navigation
@@ -92,15 +95,6 @@
         if (firstRender)
         {
             _isDarkMode = await _themeProvider.GetSystemDarkModeAsync();
-
-            // if (!AuthService.IsLoggedIn)
-            // {
-            //     var result = await AuthService.GetStateFromTokenAsync();
-            //     if (result)
-            //     {
-            //         Navigation.Refresh();
-            //     }
-            // }
         
             await InvokeAsync(StateHasChanged);
         }

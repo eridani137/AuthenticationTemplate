@@ -1,7 +1,6 @@
-﻿@using AuthenticationTemplate.AdminPanel.Components.Layout
-
-<CascadingAuthenticationState>
-    <Router AppAssembly="typeof(Program).Assembly">
+﻿<CascadingAuthenticationState>
+    <Router AppAssembly="typeof(Program).Assembly"
+            AdditionalAssemblies="new []{ typeof(ClientCore.IBlazorClientCore).Assembly }">
         <Found Context="routeData">
             <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)">
                 <NotAuthorized>
